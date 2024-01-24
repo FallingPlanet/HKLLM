@@ -8,5 +8,8 @@ from tqdm import tqdm
 import torchmetrics
 
 class Classifier:
-    def __init__(self, model, device, use_mixed_precision = False, log_dir = None):
+    def __init__(self, model, device, use_mixed_precision = False, log_dir = None, model_checkpoint = None):
+        if model == None:
+            raise Exception
+        self.model = model.to(device)
     

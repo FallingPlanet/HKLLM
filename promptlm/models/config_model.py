@@ -17,7 +17,13 @@ class ModelConfigure:
             
             return base_model, tokenizer
         def get_model(self, model_function, apply_quantization=None,use_flash_attn = False):
-            pass
+            model, tokenizer = model_function()
+            if apply_quantization is not None:
+                model = apply_quantization(model, apply_quantization)
+            if use_flash_attn == True:
+                model = use_flash_attn(model)
+            return model, tokenizer
+        
         def get_mixtral(base=False):
             model_id = "mistralai/Mixtral-8x7B-Instruct-v0.1"
             base_model = AutoModelForCausalLM.from_pretrained(model_id)
@@ -53,6 +59,8 @@ class ModelConfigure:
             base_model = LlamaForCausalLM.from_pretrained(model_id)
             tokenizer = LlamaTokenizerFast.from_pretrained(model_id)
         def get_llama2_7b(base=False,auth_token=""):
+            if auth_token == "":
+                print("Warning: HuggingFace authentication not detected: model may not be accessible")
             if base == True:
                 model_id = "meta-llama/Llama-2-7b-hf"
             else:
@@ -60,6 +68,8 @@ class ModelConfigure:
             base_model = AutoModelForCausalLM.from_pretrained(model_id)
             tokenizer = AutoTokenizer.from_pretrained(model_id)
         def get_llama2_13b(base=False,auth_token=""):
+            if auth_token == "":
+                print("Warning: HuggingFace authentication not detected: model may not be accessible")
             if base == True:
                 model_id = "meta-llama/Llama-2-13b-hf"
             else:
@@ -67,6 +77,8 @@ class ModelConfigure:
             base_model = LlamaForCausalLM.from_pretrained(model_id)
             tokenizer = LlamaTokenizerFast.from_pretrained(model_id)
         def get_llama2_70b(base=False,auth_token=""):
+            if auth_token == "":
+                print("Warning: HuggingFace authentication not detected: model may not be accessible")
             if base == True:
                 model_id = "meta-llama/Llama-2-70b-hf"
             else:
@@ -121,9 +133,7 @@ class ModelConfigure:
             
             elif quant_type == "8bit":
                 quant_config = BitsAndBytesConfig(
-                load_in_8bit=True,
-                bnb_4bit_quant_type="nf8",
-                bnb_4bit_compute_dtype=compute_dtype,
+                load_in_8bit=True
                 )
             
             c_model = AutoModelForCausalLM.from_pretrained(
@@ -137,8 +147,8 @@ class ModelConfigure:
                 
                 
             
-        def use_flash_attn():
-            pass
-        def is_this_a_function():
-            pass
+        def use_flash_attn(self, model):
+            model.config.attn_implementation = "flash_attention_2"
+            return model
+        
 

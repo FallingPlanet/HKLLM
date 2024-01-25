@@ -1,10 +1,11 @@
 from transformers import (
     AutoModelForCausalLM, AutoTokenizer,
-    LlamaForCausalLM, LlamaTokenizerFast
+    LlamaForCausalLM, LlamaTokenizerFast, BitsAndBytesConfig,
+    
 )
 import torch
 
-class get_model:
+class ModelConfigure:
     def __init__(self) -> None:
         def get_mistral_7b(base = False):
 
@@ -15,7 +16,8 @@ class get_model:
                 tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2")
             
             return base_model, tokenizer
-
+        def get_model(self, model_function, apply_quantization=None,use_flash_attn = False):
+            pass
         def get_mixtral(base=False):
             model_id = "mistralai/Mixtral-8x7B-Instruct-v0.1"
             base_model = AutoModelForCausalLM.from_pretrained(model_id)
@@ -108,8 +110,33 @@ class get_model:
 
         
             
-        def apply_quantization():
-            pass
+        def apply_quantization(self,model, quant_type="4bit", use_double_quant = False,compute_dtype="nf4"):
+            if quant_type == "4bit":
+                quant_config = BitsAndBytesConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_compute_dtype="nf4",
+                    bnb_4bit_compute_dtype=compute_dtype,
+                    bnb_4bit_compute_dtype=use_double_quant,
+                )
+            
+            elif quant_type == "8bit":
+                quant_config = BitsAndBytesConfig(
+                load_in_8bit=True,
+                bnb_4bit_quant_type="nf8",
+                bnb_4bit_compute_dtype=compute_dtype,
+                )
+            
+            c_model = AutoModelForCausalLM.from_pretrained(
+                model,
+                quantization_config = quant_config,
+                device_map = {"":0},
+                
+            )
+            return c_model
+                
+                
+                
+            
         def use_flash_attn():
             pass
         def is_this_a_function():

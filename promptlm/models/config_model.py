@@ -128,9 +128,8 @@ class ModelConfigure:
             if quant_type == "4bit":
                 quant_config = BitsAndBytesConfig(
                     load_in_4bit=True,
-                    bnb_4bit_compute_dtype="nf4",
                     bnb_4bit_compute_dtype=compute_dtype,
-                    bnb_4bit_compute_dtype=use_double_quant,
+                    bnb_4bit_use_double_quant=False
                 )
             
             elif quant_type == "8bit":

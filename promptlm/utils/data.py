@@ -31,9 +31,9 @@ def generate_shot_examples(data_dict,   shot_examples):
         
         indicies_to_remove.extend(sampled.index.tolist())
     
-    df_remaining = df.drop[indicies_to_remove]
+    df_remaining = df.drop(indicies_to_remove)
     
-    remaining_data_dict = df.remaining.to_dict['list']
+    remaining_data_dict = df_remaining.to_dict('list')
     
     return shot_examples_dict,remaining_data_dict
         

@@ -47,7 +47,7 @@ def multc_multl_parser(target, text, output_type="bool"):
 
     return l_array
 import re
-def parse_output_for_answer(output,keywords):
+def parse_output_for_answer(output,keywords,single_output=True):
     patterns = [
         r'<Tag>\s*\[(.*?)\]\s*<\/Tag>',
         r'<Tag>\s*(.*?)\s*<\/Tag>', # Matches <Tag>...</Tag>

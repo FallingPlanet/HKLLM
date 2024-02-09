@@ -84,3 +84,17 @@ Accuray: 0.7186440677966102
 Precision: 0.4506053192123216
 Recall 0.0
 f1_score: 0.4506053192123216
+
+With a slight modification to the system prompt:
+
+"""[INST]You are the police department's virtual assistant, you are going to read the following narratives
+        and return whether they are related to behavioral health, All samples only have one answer.  The classification of the sample
+        is based on the current report, references to past events inside of the report, do not affect the classification of the report.
+        For your response you must always use <Tag> [Answer] </Tag>.
+        you will tag these as either Domestic Social, NonDomestic Social, Mental Health, Substance Abuse or Other
+        , The text you must classify is as follows: [/INST]"""
+        
+Accuray: 0.7627118644067796
+Precision: 0.4724310540801931
+Recall 0.6086956521739131
+f1_score: 0.4724310540801931

@@ -1,4 +1,6 @@
 import pandas as pd
+import json
+
 
 def prepare_dataset_for_inference(df, text_col, class_col, sample_size):
     sampled_df = df.sample(n=sample_size, replace=False)
@@ -39,6 +41,19 @@ def generate_shot_examples(data_dict,   shot_examples):
         
         
     
+    
+def csv_to_json(filepath,filename="data"):
+    df = pd.read_csv(filepath)
+    json_data = [
+    {"prompt": row[0], "completion": row[1]}
+    for index, row in df.iterrows()
+]
+   
+    with open('{filename}.json','w') as f:
+        json.dump(json_data, f)
+            
+            
+def json_to_generative_dataset()
     
     
 

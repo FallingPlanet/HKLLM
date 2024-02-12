@@ -93,8 +93,22 @@ With a slight modification to the system prompt:
         For your response you must always use <Tag> [Answer] </Tag>.
         you will tag these as either Domestic Social, NonDomestic Social, Mental Health, Substance Abuse or Other
         , The text you must classify is as follows: [/INST]"""
-        
+
 Accuray: 0.7627118644067796
 Precision: 0.4724310540801931
 Recall 0.6086956521739131
 f1_score: 0.4724310540801931
+
+run two:
+
+Accuray: 0.7593220338983051
+Precision: 0.45697153723469514
+Recall 0.0
+f1_score: 0.45697153723469514
+
+Adding request for intermediate reasoning 
+[INST]  Classify the text, you must ONLY use <Tag> [Answer] </Tag> and can choose ONLY one answer, give intermediate reasoning.[/INST]
+Accuray: 0.8033898305084746
+Precision: 0.5434747260516083
+Recall 0.0
+f1_score: 0.5434747260516083

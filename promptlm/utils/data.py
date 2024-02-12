@@ -49,11 +49,12 @@ def csv_to_json(filepath,filename="data"):
     for index, row in df.iterrows()
 ]
    
-    with open('{filename}.json','w') as f:
+    with open(filename+'.json','w') as f:
         json.dump(json_data, f)
             
             
-def json_to_generative_dataset()
+def json_to_generative_dataset():
+    pass
     
     
 

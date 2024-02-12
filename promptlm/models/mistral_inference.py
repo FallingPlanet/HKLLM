@@ -261,37 +261,37 @@ system_prompt = """[INST]You are the police department's virtual assistant, you 
 texts = dataset["x"]
 labels = dataset["y"]
 
-for text, label in zip(texts, labels):
-    full_prompts = [knowledge+system_prompt+text+"[INST]  Classify the text, you must ONLY use <Tag> [Answer] </Tag> and can choose ONLY one answer, give intermediate reasoning, assume Other if none of the above.[/INST]" for text in texts ]
-    for prompt in full_prompts:
-        answer_array = []
-        extracted_answers = []
-        
-        sequences = pipe(
-            prompt,
-            do_sample=True,
-            max_new_tokens=600, 
-            temperature=0.5, 
-            top_k=50, 
-            top_p=0.95,
-            num_return_sequences=1,
-        )
-        model_output = sequences[0]['generated_text']
-        print(sequences[0]['generated_text'])
-        keywords = ["Domestic Social","Domestic_Social","Mental Health","Mental_Health","Substance Abuse","Substance_Abuse","NonDomestic_Social","NonDomestic Social","Other"]
-        extracted_answer = (parse_output_for_answer(model_output,keywords=keywords,single_output=True))
-        print(extracted_answer)
-        if extracted_answer == None or extracted_answers == []:
-            extracted_answer = "Non_Answer"
-        
-        processed_answer = extracted_answer[0].replace(" ","_")
-        extracted_answers.append(processed_answer)
-    accuracy = sample_accuracy(y_true=labels,y_pred=extracted_answers)
-    precision = sample_precision(y_true=labels,y_pred=extracted_answers,macro=True)
-    recall = sample_recall(y_true=labels,y_pred=extracted_answers,macro=True)
-    f1_score = sample_f1_score(y_true=labels,y_pred=extracted_answers,macro=True)
+
+full_prompts = [knowledge+system_prompt+text+"[INST]  Classify the text, you must ONLY use <Tag> [Answer] </Tag> and can choose ONLY one answer, give intermediate reasoning, assume Other if none of the above.[/INST]" for text in texts ]
+for prompt in full_prompts:
+    answer_array = []
+    extracted_answers = []
     
-    print(f"Accuracy: {accuracy:.2f}")
-    print(f"Precision: {precision:.2f}")
-    print(f"Recall: {recall:.2f}")
-    print(f"f1: {f1_score:.2f}")
+    sequences = pipe(
+        prompt,
+        do_sample=True,
+        max_new_tokens=600, 
+        temperature=0.5, 
+        top_k=50, 
+        top_p=0.95,
+        num_return_sequences=1,
+    )
+    model_output = sequences[0]['generated_text']
+    print(sequences[0]['generated_text'])
+    keywords = ["Domestic Social","Domestic_Social","Mental Health","Mental_Health","Substance Abuse","Substance_Abuse","NonDomestic_Social","NonDomestic Social","Other"]
+    extracted_answer = (parse_output_for_answer(model_output,keywords=keywords,single_output=True))
+    print(extracted_answer)
+    if extracted_answer == None or extracted_answers == []:
+        extracted_answer = "Non_Answer"
+    
+    processed_answer = extracted_answer[0].replace(" ","_")
+    extracted_answers.append(processed_answer)
+accuracy = sample_accuracy(y_true=labels,y_pred=extracted_answers)
+precision = sample_precision(y_true=labels,y_pred=extracted_answers,macro=True)
+recall = sample_recall(y_true=labels,y_pred=extracted_answers,macro=True)
+f1_score = sample_f1_score(y_true=labels,y_pred=extracted_answers,macro=True)
+
+print(f"Accuracy: {accuracy:.2f}")
+print(f"Precision: {precision:.2f}")
+print(f"Recall: {recall:.2f}")
+print(f"f1: {f1_score:.2f}")

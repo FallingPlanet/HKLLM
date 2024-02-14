@@ -36,7 +36,7 @@ class MyDataset(Dataset):
 
 # New instruction dataset
 data_files = r"/home/wstigall/pain/annotate_inst.json"
-dataset = load_dataset('json',data_files=data_files)
+dataset = load_dataset('json',data_files=data_files,split="train")
 
 
 
@@ -58,7 +58,7 @@ quant_config = BitsAndBytesConfig(
 model = AutoModelForCausalLM.from_pretrained(
     base_model,
     quantization_config=quant_config,
-    device_map={"": 0}
+    device_map="auto"
 )
 model.config.use_cache = False
 model.config.pretraining_tp = 1
@@ -78,7 +78,7 @@ peft_params = LoraConfig(
 training_params = TrainingArguments(
     output_dir="./anno/results",
     num_train_epochs=1,
-    per_device_train_batch_size=4,
+    per_device_train_batch_size=2,
     gradient_accumulation_steps=1,
     optim="paged_adamw_32bit",
     save_steps=25,
@@ -99,11 +99,13 @@ training_params = TrainingArguments(
 
 trainer = SFTTrainer(
     model=model,
-    train=dataset,
+    train_dataset=dataset,
     peft_config=peft_params,
-    dataset_text_field="text",
+    dataset_text_field="prompt",
     max_seq_length=None,
     tokenizer=tokenizer,
     args=training_params,
     packing=False,
 )
+
+trainer.train()

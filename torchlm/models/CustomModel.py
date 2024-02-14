@@ -7,4 +7,9 @@ class Custom_Model(nn.Module):
         super(Custom_Model, self).__init__():
         from_checkpoint = kwargs.get('model_dict',None)
         
+        
+        
+    def forward():
+        pass
+        
             

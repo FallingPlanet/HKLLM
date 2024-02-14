@@ -13,4 +13,29 @@ class Classifier:
         if model == None:
             raise Exception
         self.model = model.to(device)
+        
+    def train_step():
+        pass
+    def val_step():
+        pass
+    def test_step():
+        pass
+    
+    
+    
+    
+def main(mode="full"):
+    
+    
+    if mode in ["train", "full"]:
+        pass
+    pass
+
+    if mode in ["test", "full"]:
+        pass
+        
+
+
+if __name__ =="__main__":
+    main(mode="full") #Can also be train or test
     

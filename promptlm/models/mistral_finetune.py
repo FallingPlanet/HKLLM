@@ -77,7 +77,7 @@ peft_params = LoraConfig(
 
 training_params = TrainingArguments(
     output_dir="./anno/results",
-    num_train_epochs=1,
+    num_train_epochs=5,
     per_device_train_batch_size=2,
     gradient_accumulation_steps=1,
     optim="paged_adamw_32bit",
@@ -100,6 +100,7 @@ training_params = TrainingArguments(
 trainer = SFTTrainer(
     model=model,
     train_dataset=dataset,
+    eval_dataset=None,
     peft_config=peft_params,
     dataset_text_field="prompt",
     max_seq_length=None,
@@ -109,3 +110,6 @@ trainer = SFTTrainer(
 )
 
 trainer.train()
+
+trainer.model.save_pretrained(new_model)
+model.config.use_cache=True

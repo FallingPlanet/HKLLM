@@ -2,11 +2,18 @@ import pandas as pd
 import json
 
 
-def prepare_dataset_for_inference(df, text_col, class_col, sample_size):
+def prepare_dataset_for_inference(df, text_col, class_col, sample_size,supp_columns = None):
     sampled_df = df.sample(n=sample_size, replace=False)
-    
+    if supp_columns:
+        sampled_df['combined_text'] = sampled_df[text_col].astype(str)
+        for col in supp_columns:
+            sampled_df['combined_text'] += " " + sampled_df[col].astype(str)
+        x_data = sampled_df['combined_text'].tolist()
+    else:
+        x_data = sampled_df[text_col].tolist()
+        
     data_for_inference = {
-        'x': sampled_df[text_col].tolist(),
+        'x': x_data,
         'y': sampled_df[class_col].tolist()
     }
     return data_for_inference

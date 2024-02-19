@@ -72,6 +72,7 @@ def json_to_generative_dataset():
 def prepare_dataset_for_training():
     pass
 
+
 def strip_output_column_by_index(df, input_col_index, output_col_index):
     def strip_repeated_input(input_text, output_text):
         # Find the start of the repeated prompt in the completion
@@ -87,5 +88,4 @@ def strip_output_column_by_index(df, input_col_index, output_col_index):
         input_text = df.iloc[i, input_col_index]
         output_text = df.iloc[i, output_col_index]
         df.iloc[i, output_col_index] = strip_repeated_input(input_text, output_text)
-    
     return df

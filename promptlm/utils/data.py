@@ -49,10 +49,14 @@ def generate_shot_examples(data_dict,   shot_examples):
         
     
     
-def csv_to_json(filepath,filename="data"):
+def csv_to_json(filepath,filename="data",skip_index=False):
     df = pd.read_csv(filepath)
+    if skip_index:
+        df = df.iloc[1:]
+    df.reset_index(drop=True,inplace=True)
+    #adjust this as needed for now
     json_data = [
-    {"prompt": row[0], "completion": row[1]}
+    {"prompt": row[1], "completion": row[2]}
     for index, row in df.iterrows()
 ]
    
@@ -67,7 +71,7 @@ def json_to_generative_dataset():
 
 def prepare_dataset_for_training():
     pass
-    
+
 
 def strip_output_column_by_index(df, input_col_index, output_col_index):
     def strip_repeated_input(input_text, output_text):
@@ -84,7 +88,4 @@ def strip_output_column_by_index(df, input_col_index, output_col_index):
         input_text = df.iloc[i, input_col_index]
         output_text = df.iloc[i, output_col_index]
         df.iloc[i, output_col_index] = strip_repeated_input(input_text, output_text)
-    
     return df
-
-# 

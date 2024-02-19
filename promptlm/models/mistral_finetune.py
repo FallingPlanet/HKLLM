@@ -35,7 +35,7 @@ class MyDataset(Dataset):
     return (input, target)
 
 # New instruction dataset
-data_files = r"/home/wstigall/pain/annotate_inst.json"
+data_files = r"/home/wstigall/pain/data_instruct.json"
 dataset = load_dataset('json',data_files=data_files,split="train")
 
 
@@ -44,7 +44,7 @@ dataset = load_dataset('json',data_files=data_files,split="train")
 
 
 # Fine-tuned model
-new_model = "mistral-pn-annotate-hkllm-ksu-internal"
+new_model = "mistral-pn-hkllm-ksu-internal-v0.1f"
 
 compute_dtype = getattr(torch, "float16")
 
@@ -76,7 +76,7 @@ peft_params = LoraConfig(
 )
 
 training_params = TrainingArguments(
-    output_dir="./anno/results",
+    output_dir="./mistralpn/results",
     num_train_epochs=5,
     per_device_train_batch_size=2,
     gradient_accumulation_steps=1,

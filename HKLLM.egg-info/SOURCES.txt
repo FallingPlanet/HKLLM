@@ -1,5 +1,6 @@
 LICENSE
 README.md
+pyproject.toml
 setup.py
 HKLLM.egg-info/PKG-INFO
 HKLLM.egg-info/SOURCES.txt

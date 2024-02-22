@@ -1,5 +1,4 @@
 
-
 def import_knowledge_file():
     knowledge = """
     SITMH

@@ -19,6 +19,75 @@ def prepare_dataset_for_inference(df, text_col, class_col, sample_size,supp_colu
     return data_for_inference
     
 
+
+import pandas as pd
+
+def prepare_dataset_for_generator(df, indices_csv_path, indices_column_name, text_col, class_col=None, sample_size=100, supp_columns=None):
+    """
+    Prepare a dataset for inference by sampling and optionally excluding certain indices. Returns data with optional class information and indices of sampled rows.
+
+    Parameters:
+    - df: DataFrame containing the dataset.
+    - indices_csv_path: Path to a CSV file containing indices to exclude from sampling.
+    - indices_column_name: The name of the column in the CSV that contains the indices to exclude.
+    - text_col: Name of the column in df that contains text data.
+    - class_col: Optional. Name of the column in df that classifies the text data.
+    - sample_size: Number of samples to draw from df.
+    - supp_columns: Additional columns to concatenate to the text data.
+
+    Returns:
+    - A dictionary with keys 'x' for text data, 'y' for class labels (if class_col is not None), and 'Index' for the indices of the sampled rows.
+    """
+    # Load indices to exclude from sampling
+    exclude_df = pd.read_csv(indices_csv_path)
+    exclude_indices = exclude_df[indices_column_name].tolist()
+
+    # Exclude specified indices from the DataFrame
+    df_filtered = df.drop(exclude_indices, errors='ignore')
+
+    # Sample the DataFrame
+    sampled_df = df_filtered.sample(n=sample_size, replace=False)
+
+    # Combine text columns if supplementary columns are provided
+    if supp_columns:
+        sampled_df['combined_text'] = sampled_df[text_col].astype(str)
+        for col in supp_columns:
+            sampled_df['combined_text'] += " " + sampled_df[col].astype(str)
+        x_data = sampled_df['combined_text'].tolist()
+    else:
+        x_data = sampled_df[text_col].tolist()
+
+    # Prepare the data for inference
+    data_for_inference = {'x': x_data, 'Index': sampled_df.index.tolist()}
+    if class_col:
+        data_for_inference['y'] = sampled_df[class_col].tolist()
+
+    return data_for_inference
+
+
+def update_indices_csv(csv_path, indices_column_name, new_index):
+    """
+    Update the CSV file with a new index to exclude from future sampling, one at a time.
+
+    Parameters:
+    - csv_path: Path to the CSV file containing indices to exclude.
+    - indices_column_name: The name of the column in the CSV that contains the indices to exclude.
+    - new_index: A single new index to append to the CSV.
+    """
+    # Load the existing CSV file or initialize an empty DataFrame if the file does not exist
+    try:
+        existing_indices_df = pd.read_csv(csv_path)
+    except FileNotFoundError:
+        existing_indices_df = pd.DataFrame(columns=[indices_column_name])
+    
+    # Append the new index
+    new_index_df = pd.DataFrame([new_index], columns=[indices_column_name])
+    updated_indices_df = pd.concat([existing_indices_df, new_index_df]).drop_duplicates().reset_index(drop=True)
+    
+    # Save the updated DataFrame back to CSV
+    updated_indices_df.to_csv(csv_path, index=False)
+
+    
 def generate_shot_examples(data_dict,   shot_examples):
     
     df = pd.DataFrame(data_dict)

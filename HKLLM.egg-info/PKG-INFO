@@ -63,7 +63,6 @@ Requires-Dist: requests-oauthlib==1.3.1
 Requires-Dist: scikit-learn==1.3.1
 Requires-Dist: scipy==1.11.2
 Requires-Dist: six==1.16.0
-Requires-Dist: sklearn==0.0.post9
 Requires-Dist: smart-open==6.4.0
 Requires-Dist: sox==1.4.1
 Requires-Dist: spacy==3.7.2

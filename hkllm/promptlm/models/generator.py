@@ -6,9 +6,9 @@ from collections import Counter
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig, pipeline
 import torch
 import pandas as pd
-from HKLLM.src.promptlm.utils.data import prepare_dataset_for_inference, generate_shot_examples
-from HKLLM.src.promptlm.utils.metrics import sample_recall, sample_accuracy, sample_f1_score, sample_precision
-from HKLLM.src.promptlm.utils.parsers import multc_parser, parse_output_for_answer
+from HKLLM.hkllm.promptlm.utils.data import prepare_dataset_for_inference, generate_shot_examples
+from HKLLM.hkllm.promptlm.utils.metrics import sample_recall, sample_accuracy, sample_f1_score, sample_precision
+from HKLLM.hkllm.promptlm.utils.parsers import multc_parser, parse_output_for_answer
 from peft import PeftModel, PeftConfig, AutoPeftModel, AutoPeftModelForCausalLM
 from HKLLM.secrets import import_knowledge_file
 

@@ -64,6 +64,28 @@ def prepare_dataset_for_generator(df, indices_csv_path, indices_column_name, tex
 
     return data_for_inference
 
+def extract_generated_text(full_text, prompt):
+    """
+    Extracts the generated text from the full text by removing the prompt.
+
+    Parameters:
+    - full_text: The complete text returned by the model, which includes the prompt and the generated text.
+    - prompt: The prompt that was originally provided to the model.
+
+    Returns:
+    - The generated text, with the prompt removed.
+    """
+    if full_text.startswith(prompt):
+        # Remove the prompt from the full text to isolate the generated text
+        return full_text[len(prompt):]
+    else:
+        # If the full text does not start with the prompt, return the full text as is
+        return full_text
+
+def rlhf_sample(prompt,accepted,rejected):
+    pass
+def create_instruction_pair(prompt,completion):
+    pass
 
 def update_indices_csv(csv_path, indices_column_name, new_index):
     """

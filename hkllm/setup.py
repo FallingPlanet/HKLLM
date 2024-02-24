@@ -6,7 +6,7 @@ with open('requirements.txt') as f:
     
 setup(
     name="HKKLLM",
-    version='0.0.1-alpha',
+    version='0.0.2',
     author='William Stigall, Hailey Walker',
     author_email="williamastigall@gmail.com, hnwalker@gmail.com",
     description=(

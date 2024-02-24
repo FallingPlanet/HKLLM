@@ -19,7 +19,7 @@ df = pd.read_csv(data)
 
 
 
-dataset = prepare_dataset_for_generator(df=df,text_col="narrative1",class_col="domestic",sample_size=1000,supp_columns=None)
+dataset = prepare_dataset_for_generator(df=df,text_col="narrative1",class_col=None,sample_size=1000,supp_columns=None)
 
 quant_config = BitsAndBytesConfig(
     load_in_4bit=True,

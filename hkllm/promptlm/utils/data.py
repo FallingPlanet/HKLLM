@@ -82,10 +82,41 @@ def extract_generated_text(full_text, prompt):
         # If the full text does not start with the prompt, return the full text as is
         return full_text
 
-def rlhf_sample(prompt,accepted,rejected):
-    pass
-def create_instruction_pair(prompt,completion):
-    pass
+def rlhf_sample(prompt, accepted, rejected):
+    """
+    Generates a dictionary for a RLHF sample including the prompt, one accepted completion, and one rejected completion.
+
+    Args:
+    - prompt (str): The input prompt for the sample.
+    - accepted (str): The accepted completion for the prompt.
+    - rejected (str): The rejected completion for the prompt.
+
+    Returns:
+    - dict: A dictionary representing the RLHF sample.
+    """
+    sample = {
+        "prompt": prompt,
+        "accepted": accepted,
+        "rejected": rejected
+    }
+    return sample
+
+def create_instruction_pair(prompt, completion):
+    """
+    Generates a dictionary for an instruction pair including the prompt and its completion.
+
+    Args:
+    - prompt (str): The input prompt.
+    - completion (str): The expected completion for the prompt.
+
+    Returns:
+    - dict: A dictionary representing the instruction pair.
+    """
+    instruction_pair = {
+        "prompt": prompt,
+        "completion": completion
+    }
+    return instruction_pair
 
 def update_indices_csv(csv_path, indices_column_name, new_index):
     """
@@ -180,3 +211,29 @@ def strip_output_column_by_index(df, input_col_index, output_col_index):
         output_text = df.iloc[i, output_col_index]
         df.iloc[i, output_col_index] = strip_repeated_input(input_text, output_text)
     return df
+
+import os
+def append_to_json_file(file_path, new_data):
+    """
+    Appends a new dictionary to a JSON file that contains a list of dictionaries.
+    
+    Args:
+    - file_path (str): Path to the JSON file.
+    - new_data (dict): New data to append.
+    """
+    if not os.path.isfile(file_path):
+        # If the file doesn't exist, create it with the new_data as the first entry
+        with open(file_path, 'w') as file:
+            json.dump([new_data], file, indent=4)
+    else:
+        # If the file exists, append the new_data
+        with open(file_path, 'r+') as file:
+            file.seek(0, os.SEEK_END)
+            file_position = file.tell()
+            file.seek(file_position - 1, os.SEEK_SET)  # Move back before the last "]"
+            if file_position > 2:  # More than empty list characters "[]"
+                file.write(',')  # Add a comma only if there is existing data
+            file.write(json.dumps(new_data, indent=4)[1:-1])  # Append new_data without the square brackets
+            file.write(']')
+            file.truncate()  # Truncate the file to the current position
+        

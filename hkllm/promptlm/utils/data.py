@@ -171,19 +171,34 @@ def generate_shot_examples(data_dict,   shot_examples):
         
     
     
-def csv_to_json(filepath,filename="data",skip_index=False):
-    df = pd.read_csv(filepath)
-    if skip_index:
-        df = df.iloc[1:]
-    df.reset_index(drop=True,inplace=True)
-    #adjust this as needed for now
-    json_data = [
-    {"prompt": row[1], "completion": row[2]}
-    for index, row in df.iterrows()
-]
-   
-    with open(filename+'.json','w') as f:
-        json.dump(json_data, f)
+import json
+import os
+
+def append_to_json_file(file_path, new_data):
+    """
+    Appends a new dictionary to a JSON file that contains a list of dictionaries.
+    
+    Args:
+    - file_path (str): Path to the JSON file.
+    - new_data (dict): New data to append.
+    """
+    # Check if the file exists and has content
+    if os.path.isfile(file_path) and os.path.getsize(file_path) > 0:
+        with open(file_path, 'r+') as file:
+            # Load the existing data
+            file_data = json.load(file)
+            # Append the new data
+            file_data.append(new_data)
+            # Reset the file pointer to the beginning of the file
+            file.seek(0)
+            # Write the updated data back to the file
+            json.dump(file_data, file, indent=4)
+            # Truncate the file to the new size in case the new data is smaller than the old
+            file.truncate()
+    else:
+        # If the file doesn't exist or is empty, create it with the new_data as the first entry
+        with open(file_path, 'w') as file:
+            json.dump([new_data], file, indent=4)
             
             
 def json_to_generative_dataset():

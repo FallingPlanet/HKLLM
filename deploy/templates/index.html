@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Model Demo</title>
+</head>
+<body>
+    <form action="/generate" method="post">
+        <input type="text" name="input_text" placeholder="Enter your text">
+        <!-- Dropdown for selecting the model -->
+        <select name="model_name">
+            {% for model_id, model_name in available_models.items() %}
+                <option value="{{ model_id }}">{{ model_name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Generate</button>
+    </form>
+</body>
+</html>

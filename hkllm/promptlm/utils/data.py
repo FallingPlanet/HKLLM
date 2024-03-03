@@ -221,19 +221,21 @@ def append_to_json_file(file_path, new_data):
     - file_path (str): Path to the JSON file.
     - new_data (dict): New data to append.
     """
-    if not os.path.isfile(file_path):
-        # If the file doesn't exist, create it with the new_data as the first entry
+    # Check if the file exists and has content
+    if os.path.isfile(file_path) and os.path.getsize(file_path) > 0:
+        with open(file_path, 'r+') as file:
+            # Load the existing data
+            file_data = json.load(file)
+            # Append the new data
+            file_data.append(new_data)
+            # Reset the file pointer to the beginning of the file
+            file.seek(0)
+            # Write the updated data back to the file
+            json.dump(file_data, file, indent=4)
+            # Truncate the file to the new size in case the new data is smaller than the old
+            file.truncate()
+    else:
+        # If the file doesn't exist or is empty, create it with the new_data as the first entry
         with open(file_path, 'w') as file:
             json.dump([new_data], file, indent=4)
-    else:
-        # If the file exists, append the new_data
-        with open(file_path, 'r+') as file:
-            file.seek(0, os.SEEK_END)
-            file_position = file.tell()
-            file.seek(file_position - 1, os.SEEK_SET)  # Move back before the last "]"
-            if file_position > 2:  # More than empty list characters "[]"
-                file.write(',')  # Add a comma only if there is existing data
-            file.write(json.dumps(new_data, indent=4)[1:-1])  # Append new_data without the square brackets
-            file.write(']')
-            file.truncate()  # Truncate the file to the current position
         

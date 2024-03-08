@@ -47,7 +47,7 @@ def generate_text():
         return str(e), 404
     user_input = request.form['input_text']
     inputs = current_tokenizer.encode(user_input, return_tensors='pt')
-    outputs = current_model.generate(inputs, max_length=50, num_return_sequences=1)
+    outputs = current_model.generate(inputs, max_length=200, num_return_sequences=1)
     generated_text = current_tokenizer.decode(outputs[0], skip_special_tokens=True)
     return render_template('result.html', input_text=user_input, generated_text=generated_text)
 

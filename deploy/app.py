@@ -8,14 +8,16 @@ app = Flask(__name__)
 current_model = None
 current_tokenizer = None
 
-def load_configs(path="models.json"):
+initialized = False
+
+def load_configs(path="deploy/models.json"):
     """Loads the model configurations from a specified JSON file."""
     with open(path, 'r') as file:
         models_config = json.load(file)
     return models_config
 
 # Load model configurations from JSON file
-model_configs = load_configs("models.json")
+model_configs = load_configs("deploy/models.json")
 
 def load_model_config(model_identifier, models_config):
     global current_model, current_tokenizer  # Use global keyword to modify global variables
@@ -27,11 +29,15 @@ def load_model_config(model_identifier, models_config):
     # Assume adapter_path or other configurations are handled here
     #This can be moved directly from the geenrator in my directory
 
-@app.before_first_request
-def initialize_default_model():
-    global model_configs  # Ensure this uses the loaded configurations
-    load_model_config("HKLLM-Mistral-7B-Full", model_configs)  
+def initialize_if_needed():
+    global initialized, model_configs  # Ensure this uses the loaded configurations and the initialized flag
+    if not initialized:
+        load_model_config("mistralai/Mistral-7B-Instruct-v0.2", model_configs) 
+        initialized = True  # Mark as initialized after the configuration is loaded
 
+@app.before_request
+def before_request_func():
+    initialize_if_needed()
 @app.route('/')
 def home():
     # Pass the list of model configs to the template to populate the dropdown

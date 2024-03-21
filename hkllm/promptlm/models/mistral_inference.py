@@ -6,9 +6,9 @@ sys.path.append(r"/home/wstigall/pain")
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig, pipeline
 import torch
 import pandas as pd
-from HKLLM.promptlm.utils.data import prepare_dataset_for_inference, generate_shot_examples
-from HKLLM.promptlm.utils.metrics import sample_recall, sample_accuracy, sample_f1_score, sample_precision
-from HKLLM.promptlm.utils.parsers import multc_parser, parse_output_for_answer
+from hkllm.promptlm.utils.data import prepare_dataset_for_inference, generate_shot_examples
+from hkllm.promptlm.utils.metrics import sample_recall, sample_accuracy, sample_f1_score, sample_precision
+from hkllm.promptlm.utils.parsers import multc_parser, parse_output_for_answer
 
 model_name = "mistralai/Mistral-7B-Instruct-v0.2"
 

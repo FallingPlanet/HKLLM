@@ -109,13 +109,7 @@ def count_distribution(y_true, y_pred):
     return actual_label_distributions,pred_label_distribution
 
 
-    
-def calculate_binary_confusion_matrix_elements(y_true, y_pred, positive_class):
-    TP = sum(1 for true, pred in zip(y_true, y_pred) if true == pred == positive_class)
-    FP = sum(1 for true, pred in zip(y_true, y_pred) if true != positive_class and pred == positive_class)
-    TN = sum(1 for true, pred in zip(y_true, y_pred) if true != positive_class and pred != positive_class)
-    FN = sum(1 for true, pred in zip(y_true, y_pred) if true == positive_class and pred != positive_class)
-    return TP, FP, TN, FN
+
 
 def calculate_confusion_matrix_elements(y_true, y_pred, positive_classes):
     TP = sum(1 for true, pred in zip(y_true, y_pred) if true == pred and true in positive_classes)
@@ -124,9 +118,27 @@ def calculate_confusion_matrix_elements(y_true, y_pred, positive_classes):
     FN = sum(1 for true, pred in zip(y_true, y_pred) if true in positive_classes and pred not in positive_classes)
     return TP, FP, TN, FN
   
+def calculate_confusion_matrix_elements(y_true, y_pred, positive_classes):
+    # Initialize counts
+    TP = FP = TN = FN = 0
+
+    for true, pred in zip(y_true, y_pred):
+        if true in positive_classes and pred in positive_classes:
+            TP += 1
+        elif true not in positive_classes and pred in positive_classes:
+            FP += 1
+        elif true not in positive_classes and pred not in positive_classes:
+            TN += 1
+        elif true in positive_classes and pred not in positive_classes:
+            FN += 1
+
+    return TP, FP, TN, FN
+
 def calculate_binary_metrics(y_true, y_pred, positive_classes):
+    # Calculate confusion matrix elements
     TP, FP, TN, FN = calculate_confusion_matrix_elements(y_true, y_pred, positive_classes)
     
+    # Calculate metrics
     precision = TP / (TP + FP) if (TP + FP) > 0 else 0
     recall = TP / (TP + FN) if (TP + FN) > 0 else 0
     f1 = 2 * ((precision * recall) / (precision + recall)) if (precision + recall) > 0 else 0

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Demo</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body { padding: 20px; }
+        .form-control { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Text Generation Demo</h2>
+        <form id="generateForm" action="/generate" method="post">
+            <div class="form-group">
+                <label for="inputText">Enter your text:</label>
+                <input type="text" class="form-control" id="inputText" name="input_text" placeholder="Enter your text">
+            </div>
+            <div class="form-group">
+                <label for="modelSelect">Choose a model:</label>
+                <select class="form-control" id="modelSelect" name="model_name">
+                    {% for model_config in model_configs %}
+                        <option value="{{ model_config['model_identifier'] }}">{{ model_config['description'] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Generate</button>
+        </form>
+        <div id="loadingIndicator" style="display:none;">Generating text, please wait...</div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#generateForm').submit(function() {
+                $('#loadingIndicator').show();
+            });
+        });
+    </script>
+</body>
+</html>

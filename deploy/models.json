@@ -1,0 +1,12 @@
+[
+    {
+      "model_identifier": "mistralai/Mistral-7B-Instruct-v0.2",
+      "description": "Mistral-7B-Instruct-v0.2: A high-capacity language model fine-tuned for instruction-based tasks."
+    },
+    {
+      "model_identifier": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+      "description": "Mixtral."
+    }
+   
+  ]
+  

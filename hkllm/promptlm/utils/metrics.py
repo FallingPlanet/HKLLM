@@ -128,15 +128,14 @@ def calculate_confusion_matrix_elements(y_true, y_pred, positive_classes):
 
     return TP, FP, TN, FN
 
-
-
-  
 def calculate_binary_metrics(y_true, y_pred, positive_classes):
     TP, FP, TN, FN = calculate_confusion_matrix_elements(y_true, y_pred, positive_classes)
+    
     precision = TP / (TP + FP) if (TP + FP) > 0 else 0
     recall = TP / (TP + FN) if (TP + FN) > 0 else 0
     f1 = 2 * ((precision * recall) / (precision + recall)) if (precision + recall) > 0 else 0
     accuracy = (TP + TN) / (TP + FP + TN + FN) if (TP + FP + TN + FN) > 0 else 0
     
     return accuracy, precision, recall, f1
+
 

@@ -220,6 +220,6 @@ def import_knowledge_file():
     return knowledge
 
 def import_class_definitions():
-    class_def = "Mental Health: Involving an individual with a diagnosed mental disorder, like schizophrenia or sucidal ideations\nDomestic Social: Involving multiple Individuals in a home setting, like husband/wife or parent/children domestic disputes\nNonDomestic Social: Involving multiple individuals not in a home setting, lioke comitting crimes on those not relatyed to the perpretrator\nSubstance Abuse: INdividual with persistent drug/alchohol abuse problems."
+    class_def = "Mental Health: Involving an individual with a diagnosed mental disorder, like schizophrenia or sucidal ideations\nDomestic Social: Involving multiple Individuals in a home setting, like husband/wife or parent/children domestic disputes\nNonDomestic Social: Involving multiple individuals not in a home setting, like comitting crimes on those not related to the perpretrator\nSubstance Abuse: Individual with persistent drug/alchohol abuse problems."
     
     return class_def

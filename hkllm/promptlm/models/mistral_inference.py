@@ -138,6 +138,6 @@ system_prompt = """[INST]You are the police department's Ace virtual assistant, 
                 you will tag these as either Domestic Social, NonDomestic Social, Mental Health, Substance Abuse or Other there are no other tags.
                 The text you must classify is as follows: [/INST]"""
 lora_adapter = r"/home/wstigall/workspace/mistral-hkllm-ksu-internal-v0.9"
-inference_model(lora_adapter=None,model_name="mistralai/Mistral-7B-Instruct-v0.2",system_prompt=system_prompt,use_class_definitions=True,override=True)
+inference_model(lora_adapter=lora_adapter,model_name="mistralai/Mistral-7B-Instruct-v0.2",system_prompt=system_prompt,use_class_definitions=True,override=True)
 #inference_model(model_name="mistralai/Mixtral-8x7B-Instruct-v0.1",lora_adapter=None,system_prompt=system_prompt)
 #inference_model(lora_adapter=None,model_name="mistralai/Mistral-7B-Instruct-v0.2")

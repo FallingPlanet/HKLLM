@@ -54,6 +54,7 @@ def parse_output_for_answer(output,keywords,single_output=True):
         r'<Answer>\s*(.*?)\s*<\/Answer>', # Matches <Answer>....</Answer>
         r'\[\s*(.*?)\s*\]',
         r'<\s*(.*?)\s*',
+        
         r'(?:Your response:|Answer:)\s*(.*?)(?=:[\.,\,]|$)'
         
     ]

@@ -46,31 +46,38 @@ def multc_multl_parser(target, text, output_type="bool"):
         l_array.append(c_array)
 
     return l_array
+
+
 import re
-def parse_output_for_answer(output,keywords,single_output=True):
+
+def parse_output_for_answer(output, keywords, single_output=True):
+    # Allowing for optional spaces within the tag brackets
+    keyword_patterns = [fr"<\s*{keyword}\s*>" for keyword in keywords]
     patterns = [
-        r'<Tag>\s*\[(.*?)\]\s*<\/Tag>',
-        r'<Tag>\s*(.*?)\s*<\/Tag>', # Matches <Tag>...</Tag>
-        r'<Answer>\s*(.*?)\s*<\/Answer>', # Matches <Answer>....</Answer>
+        r'<\s*Tag\s*>\s*\[(.*?)\]\s*<\/\s*Tag\s*>',
+        r'<\s*Tag\s*>\s*(.*?)\s*<\/\s*Tag\s*>',
+        r'<\s*Answer\s*>\s*(.*?)\s*<\/\s*Answer\s*>',
         r'\[\s*(.*?)\s*\]',
-        r'<\s*(.*?)\s*',
-        
+        # Patterns below are adjusted to allow optional spaces within tags
+        r'<\s*(.*?)\s*>',
+        r'<([^<>]+)>',
+        r'<([^>]+)>',
         r'(?:Your response:|Answer:)\s*(.*?)(?=:[\.,\,]|$)'
-        
     ]
     pattern = '|'.join(patterns)
     
-    matches = re.findall(pattern,output, re.DOTALL)
-    print("found matches = ",matches)
+    matches = re.findall(pattern, output, re.DOTALL)
+    print("found matches = ", matches)
     
     extracted_answers = []
     for match in matches:
         filtered_match = list(filter(None, match))
         if filtered_match:
             answer = filtered_match[0].strip()
-            if not keywords or answer in keywords:
+            if not keywords or any(keyword.lower() in answer.lower() for keyword in keywords):
                 extracted_answers.append(answer)
     return extracted_answers
+
     
 
             

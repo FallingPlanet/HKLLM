@@ -82,7 +82,7 @@ def extract_generated_text(full_text, prompt):
         # If the full text does not start with the prompt, return the full text as is
         return full_text
 
-def rlhf_sample(prompt, accepted, rejected):
+def rlhf_sample(prompt, chosen, rejected):
     """
     Generates a dictionary for a RLHF sample including the prompt, one accepted completion, and one rejected completion.
 
@@ -96,7 +96,7 @@ def rlhf_sample(prompt, accepted, rejected):
     """
     sample = {
         "prompt": prompt,
-        "accepted": accepted,
+        "chosen": chosen,
         "rejected": rejected
     }
     return sample
@@ -253,4 +253,16 @@ def append_to_json_file(file_path, new_data):
         # If the file doesn't exist or is empty, create it with the new_data as the first entry
         with open(file_path, 'w') as file:
             json.dump([new_data], file, indent=4)
-        
+
+def change_keys(json_file):
+    with open(json_file, 'r') as f:
+        data = json.load(f)
+
+    for i in range(len(data)):
+        data[i]['chosen'] = data[i]['accepted']
+        del data[i]['accepted']
+
+    with open(json_file, 'w') as f:
+        json.dump(data, f)
+
+change_keys('/home/wstigall/workspace/filtered_dpo.json')   

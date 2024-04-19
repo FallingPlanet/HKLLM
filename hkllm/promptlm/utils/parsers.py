@@ -55,9 +55,19 @@ def parse_output_for_answer(output, keywords, single_output=True):
     keyword_patterns = [fr"<\s*{keyword}\s*>" for keyword in keywords]
     patterns = [
         r'<\s*Tag\s*>\s*\[(.*?)\]\s*<\/\s*Tag\s*>',
+        r'<\s*tag\s*>\s*\[(.*?)\]\s*<\/\s*tag\s*>',
+        r'<\s*Tags\s*>\s*\[(.*?)\]\s*<\/\s*Tags\s*>',
+        r'<\s*Tag\s*>\s*\[(.*?)\]\s*<\/\s*Tags\s*>',
         r'<\s*TAG\s*>\s*\[(.*?)\]\s*<\/\s*TAG\s*>',
+        r'<\s*TAGS\s*>\s*\[(.*?)\]\s*<\/\s*TAGS\s*>',
+        r'<\s*TAG\s*>\s*\[(.*?)\]\s*<\/\s*TAGS\s*>',
+        r'<\s*TAG\s*>\s*\[(.*?)\]\s*<\/\s*Tag\s*>',
         r'<\s*Tag\s*>\s*(.*?)\s*<\/\s*Tag\s*>',
+        r'<\s*tag\s*>\s*(.*?)\s*<\/\s*tag\s*>',
+        r'<\s*Tag\s*>\s*(.*?)\s*<\/\s*Tags\s*>',
         r'<\s*TAG\s*>\s*(.*?)\s*<\/\s*TAG\s*>',
+        r'<\s*TAG\s*>\s*(.*?)\s*<\/\s*Tag\s*>',
+        r'<\s*TAG\s*>\s*(.*?)\s*<\/\s*TAGs\s*>',
         r'<\s*Answer\s*>\s*(.*?)\s*<\/\s*Answer\s*>',
         r'\[\s*(.*?)\s*\]',
         # Patterns below are adjusted to allow optional spaces within tags

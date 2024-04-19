@@ -2,29 +2,52 @@ import pandas as pd
 import json
 
 
-def prepare_dataset_for_inference(df, text_col, class_col, sample_size,supp_columns = None):
+
+def prepare_dataset_for_inference(df, text_col, class_col, sample_size, supp_columns=None, leading_columns=None):
+    """
+    Prepare a dataset for inference by sampling and optionally concatenating leading and supplementary text columns,
+    handling empty or NaN values gracefully by skipping them in concatenation.
+
+    Parameters:
+    - df: DataFrame containing the dataset.
+    - text_col: Name of the main text column.
+    - class_col: Name of the classification column.
+    - sample_size: Number of samples to draw from df.
+    - supp_columns: Optional. Additional columns to concatenate after the main text.
+    - leading_columns: Optional. Columns to concatenate before the main text.
+
+    Returns:
+    - A dictionary with keys 'x' for text data and 'y' for class labels.
+    """
     sampled_df = df.sample(n=sample_size, replace=False)
-    if supp_columns:
-        sampled_df['combined_text'] = sampled_df[text_col].astype(str)
-        for col in supp_columns:
-            sampled_df['combined_text'] += " " + sampled_df[col].astype(str)
-        x_data = sampled_df['combined_text'].tolist()
+
+    # Initialize combined text with leading columns if present
+    if leading_columns:
+        sampled_df['combined_text'] = sampled_df[leading_columns].astype(str).agg(lambda x: ' '.join(x.dropna()), axis=1)
+        sampled_df['combined_text'] += " " + sampled_df[text_col].astype(str)
     else:
-        x_data = sampled_df[text_col].tolist()
-        
+        sampled_df['combined_text'] = sampled_df[text_col].astype(str)
+
+    # Append supplementary columns, skipping blanks and NaNs
+    if supp_columns:
+        for col in supp_columns:
+            sampled_df['combined_text'] += sampled_df[col].astype(str).replace(r'^\s*$', '', regex=True).apply(lambda x: ' ' + x if x != '' else '')
+
+    x_data = sampled_df['combined_text'].tolist()
+
     data_for_inference = {
         'x': x_data,
         'y': sampled_df[class_col].tolist()
     }
     return data_for_inference
-    
 
 
-import pandas as pd
 
-def prepare_dataset_for_generator(df, indices_csv_path, indices_column_name, text_col, class_col=None, sample_size=100, supp_columns=None):
+
+def prepare_dataset_for_generator(df, indices_csv_path, indices_column_name, text_col, class_col=None, sample_size=100, supp_columns=None, leading_columns=None):
     """
-    Prepare a dataset for inference by sampling and optionally excluding certain indices. Returns data with optional class information and indices of sampled rows.
+    Prepare a dataset for generator tasks by excluding specific indices, sampling, and optionally concatenating text columns,
+    handling empty or NaN values gracefully by skipping them in concatenation.
 
     Parameters:
     - df: DataFrame containing the dataset.
@@ -33,7 +56,8 @@ def prepare_dataset_for_generator(df, indices_csv_path, indices_column_name, tex
     - text_col: Name of the column in df that contains text data.
     - class_col: Optional. Name of the column in df that classifies the text data.
     - sample_size: Number of samples to draw from df.
-    - supp_columns: Additional columns to concatenate to the text data.
+    - supp_columns: Additional columns to concatenate to the text after the main text.
+    - leading_columns: Columns to concatenate to the text before the main text.
 
     Returns:
     - A dictionary with keys 'x' for text data, 'y' for class labels (if class_col is not None), and 'Index' for the indices of the sampled rows.
@@ -48,21 +72,27 @@ def prepare_dataset_for_generator(df, indices_csv_path, indices_column_name, tex
     # Sample the DataFrame
     sampled_df = df_filtered.sample(n=sample_size, replace=False)
 
-    # Combine text columns if supplementary columns are provided
-    if supp_columns:
-        sampled_df['combined_text'] = sampled_df[text_col].astype(str)
-        for col in supp_columns:
-            sampled_df['combined_text'] += " " + sampled_df[col].astype(str)
-        x_data = sampled_df['combined_text'].tolist()
+    # Initialize combined text with leading columns if present
+    if leading_columns:
+        sampled_df['combined_text'] = sampled_df[leading_columns].astype(str).agg(lambda x: ' '.join(x.dropna()), axis=1)
+        sampled_df['combined_text'] += " " + sampled_df[text_col].astype(str)
     else:
-        x_data = sampled_df[text_col].tolist()
+        sampled_df['combined_text'] = sampled_df[text_col].astype(str)
 
-    # Prepare the data for inference
-    data_for_inference = {'x': x_data, 'Index': sampled_df.index.tolist()}
+    # Append supplementary columns, skipping blanks and NaNs
+    if supp_columns:
+        for col in supp_columns:
+            sampled_df['combined_text'] += sampled_df[col].astype(str).replace(r'^\s*$', '', regex=True).apply(lambda x: ' ' + x if x != '' else '')
+
+    x_data = sampled_df['combined_text'].tolist()
+
+    # Prepare the data for generator tasks
+    data_for_generator = {'x': x_data, 'Index': sampled_df.index.tolist()}
     if class_col:
-        data_for_inference['y'] = sampled_df[class_col].tolist()
+        data_for_generator['y'] = sampled_df[class_col].tolist()
 
-    return data_for_inference
+    return data_for_generator
+
 
 def extract_generated_text(full_text, prompt):
     """

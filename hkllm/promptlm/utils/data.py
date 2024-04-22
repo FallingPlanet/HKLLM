@@ -43,6 +43,53 @@ def prepare_dataset_for_inference(df, text_col, class_col, sample_size, supp_col
 
 
 
+def prepare_dataset_for_conversion(df, text_col, class_col,annotation_col, sample_size, supp_columns=None, leading_columns=None):
+    if annotation_col == None:
+        print("No annotation column has been passed, if this is not in error, please use <prepare_dataset_for_inference>")
+    """
+    Prepare a dataset for inference by sampling and optionally concatenating leading and supplementary text columns,
+    handling empty or NaN values gracefully by skipping them in concatenation.
+
+    Parameters:
+    - df: DataFrame containing the dataset.
+    - text_col: Name of the main text column.
+    - class_col: Name of the classification column.
+    - sample_size: Number of samples to draw from df.
+    - supp_columns: Optional. Additional columns to concatenate after the main text.
+    - leading_columns: Optional. Columns to concatenate before the main text.
+
+    Returns:
+    - A dictionary with keys 'x' for text data , 'y' for class labels and 'z' for the annotations.
+    
+    
+    Notes:
+    - This will not work with the normal parser utilize the conversion_parser from hkllm.promptlm.utils.parsers
+    """
+    
+    
+    sampled_df = df.sample(n=sample_size, replace=False)
+
+    # Initialize combined text with leading columns if present
+    if leading_columns:
+        sampled_df['combined_text'] = sampled_df[leading_columns].astype(str).agg(lambda x: ' '.join(x.dropna()), axis=1)
+        sampled_df['combined_text'] += " " + sampled_df[text_col].astype(str)
+    else:
+        sampled_df['combined_text'] = sampled_df[text_col].astype(str)
+
+    # Append supplementary columns, skipping blanks and NaNs
+    if supp_columns:
+        for col in supp_columns:
+            sampled_df['combined_text'] += sampled_df[col].astype(str).replace(r'^\s*$', '', regex=True).apply(lambda x: ' ' + x if x != '' else '')
+
+    x_data = sampled_df['combined_text'].tolist()
+
+    data_for_conversion = {
+        'x': x_data,
+        'y': sampled_df[class_col].tolist(),
+        'z': sampled_df[annotation_col]
+        
+    }
+    return data_for_conversion
 
 def prepare_dataset_for_generator(df, indices_csv_path, indices_column_name, text_col, class_col=None, sample_size=100, supp_columns=None, leading_columns=None):
     """

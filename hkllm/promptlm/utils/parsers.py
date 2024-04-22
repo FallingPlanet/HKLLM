@@ -90,6 +90,42 @@ def parse_output_for_answer(output, keywords, single_output=True):
                 extracted_answers.append(answer)
     return extracted_answers
 
+def decompose_tag(data_dict, key, exact_tags):
+    """
+    Decompose strings in a list within a dictionary by extracting exact tags and the remainder of the string for each.
+
+    Parameters:
+    data_dict (dict): Dictionary containing lists of strings under various keys.
+    key (str): The key in the dictionary whose list is to be processed.
+    exact_tags (list of str): Strings considered as tags.
+
+    Returns:
+    dict:
+        A dictionary with decomposed data (tag and remainder) for each original string under the specified key.
+    """
+    results = []
+    strings_to_process = data_dict.get(key, [])
+    
+    # Compile regex to match any of the exact_tags at the start of each string entry
+    tag_regex = re.compile(r'(' + '|'.join(map(re.escape, exact_tags)) + ')(.*)')
+    
+    for item in strings_to_process:
+        individual_entries = item.strip("[]").replace("'", "").split(",")
+        decomposed_entries = []
+        for entry in individual_entries:
+            entry = entry.strip()
+            match = tag_regex.match(entry)
+            if match:
+                found_tag, remainder = match.groups()
+                decomposed_entries.append((found_tag, remainder))
+        results.append(decomposed_entries)
+
+    return {key: results}
+
+
+    
+
+    
     
 
             

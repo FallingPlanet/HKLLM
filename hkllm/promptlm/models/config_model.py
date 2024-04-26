@@ -3,8 +3,6 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, LlamaForCausalLM, 
 
     
 
-import torch
-
 
 class ModelConfigure:
     def __init__(self) -> None:

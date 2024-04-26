@@ -64,7 +64,7 @@ quantization_config = BitsAndBytesConfig(
 
 model = AutoModelForCausalLM.from_pretrained(
     base_model,
-    token="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",
+    token=,
     torch_dtype=torch.float16,
     attn_implementation="flash_attention_2",
     quantization_config=quantization_config,

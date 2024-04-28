@@ -36,7 +36,7 @@ quant_config = BitsAndBytesConfig(
 lora_adapter= None
 model = AutoModelForCausalLM.from_pretrained(
         "meta-llama/Meta-Llama-3-8B",
-        use_auth_token = ,
+        use_auth_token = "",
         quantization_config=quant_config,
         device_map="auto",
         trust_remote_code=True,

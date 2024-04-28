@@ -78,7 +78,7 @@ def inference_model(model_name,lora_adapter=None,system_prompt="",user_prompt=""
     "text-generation",
     model=model,
     tokenizer=model_name,
-    token=,
+    token="",
     model_kwargs={
         "torch_dtype": torch.float16,
         "quantization_config": {"load_in_4bit": True},

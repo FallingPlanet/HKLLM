@@ -3,8 +3,11 @@ def safe_divide(num, den):
     """Prevent division by zero errors by returning 0 if the denominator is 0."""
     return num / den if den else 0
 
+
+
+
+
 def calculate_metrics(y_true, y_pred, average='macro', verbosity=0, include_specificity=False, include_npv=False):
-    """Calculate various classification metrics, allowing for different averaging methods and optional metrics."""
     if len(y_true) != len(y_pred):
         raise ValueError("Predictions and ground truth must be lists of the same length")
 
@@ -13,7 +16,7 @@ def calculate_metrics(y_true, y_pred, average='macro', verbosity=0, include_spec
     total_instances = len(y_true)
     class_weights = Counter(y_true)
 
-    # Initialize sums for micro averages
+    # Initialize counts for true positives, false positives, false negatives, and true negatives
     sum_tp, sum_fp, sum_fn, sum_tn = 0, 0, 0, 0
 
     # Calculate per-class metrics
@@ -28,54 +31,61 @@ def calculate_metrics(y_true, y_pred, average='macro', verbosity=0, include_spec
         sum_fn += fn
         sum_tn += tn
 
-        if average != 'micro':
-            precision = safe_divide(tp, tp + fp)
-            recall = safe_divide(tp, tp + fn)
-            f1 = safe_divide(2 * precision * recall, precision + recall)
-            specificity = safe_divide(tn, tn + fp) if include_specificity else None
-            npv = safe_divide(tn, tn + fn) if include_npv else None
+        precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+        recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+        accuracy = (tp + tn) / (tp + fp + fn + tn)
+        f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
+        specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
+        npv = tn / (tn + fn) if (tn + fn) > 0 else 0
 
-            class_metrics = {
-                'precision': precision,
-                'recall': recall,
-                'f1': f1,
-                'support': class_weights[cls]
-            }
-            if include_specificity:
-                class_metrics['specificity'] = specificity
-            if include_npv:
-                class_metrics['npv'] = npv
+        class_metrics = {
+            'precision': precision,
+            'recall': recall,
+            'f1': f1,
+            'accuracy': accuracy,
+            'support': class_weights[cls],
+            'specificity': specificity if include_specificity else None,
+            'npv': npv if include_npv else None
+        }
+        metrics[cls] = class_metrics
 
-            metrics[cls] = class_metrics
-
-    # Calculate overall accuracy and average metrics
-    accuracy = safe_divide(sum_tp + sum_tn, total_instances)
-
-    # Micro average calculations
+    # Calculate overall metrics based on averaging method
     if average == 'micro':
-        micro_precision = safe_divide(sum_tp, sum_tp + sum_fp)
-        micro_recall = safe_divide(sum_tp, sum_tp + sum_fn)
-        micro_f1 = safe_divide(2 * micro_precision * micro_recall, micro_precision + micro_recall)
-        metrics['overall'] = {'accuracy': accuracy, 'precision': micro_precision, 'recall': micro_recall, 'f1': micro_f1}
-
+        overall_accuracy = (sum_tp + sum_tn) / total_instances
+        overall_precision = sum_tp / (sum_tp + sum_fp) if (sum_tp + sum_fp) > 0 else 0
+        overall_recall = sum_tp / (sum_tp + sum_fn) if (sum_tp + sum_fn) > 0 else 0
+        overall_f1 = 2 * overall_precision * overall_recall / (overall_precision + overall_recall) if (overall_precision + overall_recall) > 0 else 0
+        overall_metrics = {
+            'accuracy': overall_accuracy,
+            'precision': overall_precision,
+            'recall': overall_recall,
+            'f1': overall_f1
+        }
     elif average == 'macro':
-        macro_metrics = {metric: sum(class_metrics[metric] for class_metrics in metrics.values()) / len(classes) for metric in metrics[next(iter(metrics))]}
-        macro_metrics['accuracy'] = accuracy
-        metrics['overall'] = macro_metrics
-
+        overall_metrics = {
+            'accuracy': sum(m['accuracy'] for m in metrics.values()) / len(classes),
+            'precision': sum(m['precision'] for m in metrics.values()) / len(classes),
+            'recall': sum(m['recall'] for m in metrics.values()) / len(classes),
+            'f1': sum(m['f1'] for m in metrics.values()) / len(classes)
+        }
     elif average == 'weighted':
-        total_weight = sum(class_metrics['support'] for class_metrics in metrics.values())
-        weighted_metrics = {metric: sum(class_metrics[metric] * class_metrics['support'] for class_metrics in metrics.values()) / total_weight for metric in metrics[next(iter(metrics))]}
-        weighted_metrics['accuracy'] = accuracy
-        metrics['overall'] = weighted_metrics
+        overall_metrics = {
+            'accuracy': sum(m['accuracy'] * m['support'] for m in metrics.values()) / total_instances,
+            'precision': sum(m['precision'] * m['support'] for m in metrics.values()) / total_instances,
+            'recall': sum(m['recall'] * m['support'] for m in metrics.values()) / total_instances,
+            'f1': sum(m['f1'] * m['support'] for m in metrics.values()) / total_instances
+        }
+
+    metrics['overall'] = overall_metrics
 
     if verbosity > 0:
         print("Detailed Metrics Computation:")
         for cls, class_metrics in metrics.items():
-            if cls != 'overall':
-                print(f"Class {cls} Metrics: {class_metrics}")
+            print(f"Class {cls} Metrics: {class_metrics}")
 
-    return metrics['overall']
+    return metrics
+
+
     
     
 def count_distribution(y_true, y_pred):

@@ -53,8 +53,6 @@ import re
 def parse_output_for_answer(output, keywords, single_output=True):
     # Allowing for optional spaces within the tag brackets
     keyword_patterns = [fr"<\s*{keyword}\s*>" for keyword in keywords]
-    
-    # Updated patterns to better handle mismatches and broken tags
     patterns = [
         r'<\s*Tag\s*>\s*\[(.*?)\]\s*<\/\s*Tag\s*>',
         r'<\s*tag\s*>\s*\[(.*?)\]\s*<\/\s*tag\s*>',
@@ -64,21 +62,22 @@ def parse_output_for_answer(output, keywords, single_output=True):
         r'<\s*TAGS\s*>\s*\[(.*?)\]\s*<\/\s*TAGS\s*>',
         r'<\s*TAG\s*>\s*\[(.*?)\]\s*<\/\s*TAGS\s*>',
         r'<\s*TAG\s*>\s*\[(.*?)\]\s*<\/\s*Tag\s*>',
-        r'<\s*Tag\s*>\s*(.*?)\s*<\/\s*Tag\s*\s*>',
-        r'<\s*tag\s*>\s*(.*?)\s*<\/\s*tag\s*\s*>',
-        r'<\s*Tag\s*>\s*(.*?)\s*<\/\s*Tags\s*\s*>',
-        r'<\s*TAG\s*>\s*(.*?)\s*<\/\s*TAG\s*\s*>',
-        r'<\s*TAG\s*>\s*(.*?)\s*<\/\s*Tag\s*\s*>',
-        r'<\s*TAG\s*>\s*(.*?)\s*<\/\s*TAGs\s*\s*>',
+        r'<\s*Tag\s*>\s*(.*?)\s*<\/\s*Tag\s*>',
+        r'<\s*tag\s*>\s*(.*?)\s*<\/\s*tag\s*>',
+        r'<\s*Tag\s*>\s*(.*?)\s*<\/\s*Tags\s*>',
+        r'<\s*TAG\s*>\s*(.*?)\s*<\/\s*TAG\s*>',
+        r'<\s*TAG\s*>\s*(.*?)\s*<\/\s*Tag\s*>',
+        r'<\s*TAG\s*>\s*(.*?)\s*<\/\s*TAGs\s*>',
         r'<\s*Answer\s*>\s*(.*?)\s*<\/\s*Answer\s*>',
         r'\[\s*(.*?)\s*\]',
-        # Patterns to catch broken or incorrectly closed tags
-        r'<\s*(.*?)\s*>\s*(.*?)\s*<\/\s*\1\s*>',
-        r'<([^<>]+)>\s*(.*?)\s*<\/\s*\1\s*>',
-        r'<([^>]+)>\s*(.*?)\s*<\/\s*\1\s*>',
-        r'(?:Your response:|Answer:)\s*(.*?)(?=:[\.,\,]|$)'
+        # Patterns below are adjusted to allow optional spaces within tags
+        r'<\s*(.*?)\s*>',
+        r'<([^<>]+)>',
+        r'<([^>]+)>',
+        r'(?:Your response:|Answer:)\s*(.*?)(?=:[\.,\,]|$)',
+        r'<\s*(Tag|tag|TAG|Tags|TAGS|Answer)\s*>(.*?)<\/\s*\1\s*>'
+
     ]
-    
     pattern = '|'.join(patterns)
     
     matches = re.findall(pattern, output, re.DOTALL)
@@ -86,14 +85,13 @@ def parse_output_for_answer(output, keywords, single_output=True):
     
     extracted_answers = []
     for match in matches:
-        # Flatten tuple matches to find non-empty strings
-        filtered_match = [m for submatch in match if submatch for m in submatch.split() if m.strip()]
+        filtered_match = list(filter(None, match))
         if filtered_match:
             answer = filtered_match[0].strip()
             if not keywords or any(keyword.lower() in answer.lower() for keyword in keywords):
                 extracted_answers.append(answer)
-    
     return extracted_answers
+
 def decompose_tag(data_dict, key, exact_tags):
     """
     Decompose strings in a list within a dictionary by extracting exact tags and the remainder of the string for each.

@@ -37,3 +37,13 @@ If LEN-shot is not installed via pip, you can still use it directly from the clo
 import sys
 sys.path.append('/path/to/HKLLM/LEN-shot')  # Adjust this path as necessary
 ```
+
+# Now you can import LEN-shot modules
+```python
+from len_shot import Classifier  # Assuming Classifier is a module you need to import
+
+# Example usage of the Classifier
+classifier = Classifier()
+result = classifier.classify('Example text')
+print("Classification Result:", result)
+```

@@ -1,8 +1,30 @@
 # Documentation for `EmbeddingEncoder`
 
 ## Overview
-`EmbeddingEncoder` is a key component of the LEN-shot project, designed to handle the generation and formatting of embeddings from text data. This module supports JSON input files and dictionaries, ensuring flexibility and compatibility with typical dataset formats.
+`EmbeddingEncoder` is a key component of the LEN-shot project, designed to handle the generation and formatting of embeddings from text data. This class initializes with specific model and tokenizer settings, allowing for easy reuse across multiple encoding tasks.
 
+## Class Initialization
+
+### `EmbeddingEncoder(model, tokenizer)`
+Initializes an `EmbeddingEncoder` instance with the specified model and tokenizer.
+
+**Parameters:**
+- `model`: A model from Hugging Face's Transformers library, already instantiated.
+- `tokenizer`: A tokenizer from Hugging Face's Transformers library, compatible with the model, also already instantiated.
+- `token`: HuggingFace authentication token to access gated models (or saved)
+- 
+```python
+**Example Initialization:**
+from transformers import AutoModel, AutoTokenizer
+from len_shot import EmbeddingEncoder
+
+
+model = AutoModel.from_pretrained('bert-base-uncased')
+tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+#if you have a LoRA adapter merge it before calling EmbeddingEncoder()
+
+encoder = EmbeddingEncoder(model, tokenizer)
+```
 ## Functions
 
 ### `encode()`

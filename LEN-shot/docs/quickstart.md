@@ -38,12 +38,15 @@ import sys
 sys.path.append('/path/to/HKLLM/LEN-shot')  # Adjust this path as necessary
 ```
 
-# Now you can import LEN-shot modules
+### Example Usage
 ```python
-from len_shot import Classifier  # Assuming Classifier is a module you need to import
+# Import the embedding encoder from LEN-shot
 
-# Example usage of the Classifier
-classifier = Classifier()
-result = classifier.classify('Example text')
-print("Classification Result:", result)
+from len_shot import EmbeddingEncoder
+
+# Example usage of the EmbeddingEncoder
+encoder = EmbeddingEncoder()
+text = "Example text to encode"
+embedding = encoder.encode(text)
+print("Generated Embedding:", embedding)
 ```

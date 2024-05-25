@@ -1,36 +1,43 @@
 # Documentation for `EmbeddingEncoder`
 
 ## Overview
-`EmbeddingEncoder` is a key component of the LEN-shot project, designed to handle the generation and formatting of embeddings from text data. This module supports JSON input files to maintain structure and compatibility across various data types.
+`EmbeddingEncoder` is a key component of the LEN-shot project, designed to handle the generation and formatting of embeddings from text data. This module supports JSON input files and dictionaries, ensuring flexibility and compatibility with typical dataset formats.
 
 ## Functions
 
 ### `encode()`
-The `encode()` function processes text data to generate embeddings. It can accept data in JSON format and supports optional parameters to control output behavior.
+The `encode()` function processes text data to generate embeddings. It can accept data in JSON format or as a dictionary and supports optional parameters to control output behavior and automatic formatting.
 
 **Parameters:**
-- `input_data`: Path to the JSON file containing the text data.
-- `output_path`: Optional; if provided, the embeddings are saved to this path in a binary format.
-- `output_flag`: Optional; boolean, default `False`. If `True`, the embeddings are returned directly.
+- `input_data`: Path to the JSON file or dictionary containing the text data.
+- `output_path`: Optional; if provided, the embeddings or formatted data are saved to this path.
+- `output_flag`: Optional; boolean, default `False`. If `True`, returns the embeddings directly.
+- `format`: Optional; boolean, default `False`. If `True`, performs formatting on the embeddings and returns or saves a JSON dictionary of embeddings along with their corresponding text data.
 
 **Returns:**
-- If `output_flag` is `True`, returns a list of embeddings.
+- Depending on `output_flag` and `format` settings, returns a list of embeddings or a formatted JSON dictionary.
 
 **Usage Example:**
 ```python
 from len_shot import EmbeddingEncoder
 
 encoder = EmbeddingEncoder()
+
+For encoding only
 embeddings = encoder.encode('path/to/input.json', output_flag=True)
 print("Generated Embeddings:", embeddings)
+
+For encoding and formatting directly
+formatted_data = encoder.encode('path/to/input.json', format=True, output_flag=True)
+print("Formatted Data:", formatted_data)
 ```
 
 ### `format()`
-The `format()` function organizes embeddings, along with their corresponding text data, into a structured JSON format suitable for further processing or model training.
+The `format()` function organizes embeddings, along with their corresponding text data, into a structured JSON format suitable for further processing or model training. This function is useful if data needs to be formatted after encoding has been done separately.
 
 **Parameters:**
 - `embeddings`: List of embeddings.
-- `text_data`: List of original text data corresponding to each embedding.
+- `text_data`: List of dictionaries representing the original text data corresponding to each embedding.
 - `output_path`: Path to save the formatted JSON output.
 
 **Returns:**

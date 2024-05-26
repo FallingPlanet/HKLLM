@@ -23,7 +23,7 @@ df = pd.DataFrame({
 })
 prepared_data = prepare_dataset_for_inference(df, 'description', 'category', 2)
 print(prepared_data)
-
+```
 ### Documentation for `prepare_dataset_for_conversion`
 
 ```markdown
@@ -47,11 +47,12 @@ Prepares a dataset for conversion tasks by sampling and concatenating text colum
 - Utilizes `conversion_parser` from `hkllm.promptlm.utils.parsers` for parsing.
 
 ### Example
+```
 ```python
 # Assume df and parameters are defined as shown in previous examples
 data_for_conversion = prepare_dataset_for_conversion(df, 'description', 'category', 'notes', 2)
 print(data_for_conversion)
-
+```
 ### Documentation for `prepare_dataset_for_generator`
 
 ```markdown
@@ -71,9 +72,10 @@ Prepares a dataset for generator tasks by excluding specific indices and samplin
 
 ### Returns
 - **dict**: A dictionary with keys 'x' for text data, 'y' for class labels (if class_col is not None), and 'Index' for sampled row indices.
-
+```
 ### Example
 ```python
 # Example usage assuming the DataFrame and CSV path are correctly set up
 data_for_generator = prepare_dataset_for_generator(df, 'path/to/indices.csv', 'exclude_indices', 'description', 'category', 100)
 print(data_for_generator)
+```

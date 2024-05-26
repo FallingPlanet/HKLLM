@@ -96,10 +96,10 @@ full_text = "Hello world, how are you? Hello world,"
 prompt = "Hello world,"
 generated_text = extract_generated_text(full_text, prompt)
 # Output: " how are you? Hello world,"
-
+```
 ### Documentation for `rlhf_sample`
 
-``` 
+
 ## `rlhf_sample`
 
 Generates a dictionary representing a Reinforcement Learning from Human Feedback (RLHF) sample, including a prompt and choices between an accepted and a rejected completion.
@@ -116,10 +116,10 @@ Generates a dictionary representing a Reinforcement Learning from Human Feedback
 ```python
 rlhf_dict = rlhf_sample("What is the capital of France?", "Paris", "Lyon")
 # Output: {'prompt': 'What is the capital of France?', 'chosen': 'Paris', 'rejected': 'Lyon'}
-
+```
 ### Documentation for `create_instruction_pair`
 
-``` 
+
 ## `create_instruction_pair`
 
 Creates a dictionary representing an instructional pair, which includes a prompt and its corresponding expected completion.
@@ -135,10 +135,10 @@ Creates a dictionary representing an instructional pair, which includes a prompt
 ```python
 instruction = create_instruction_pair("Translate to French: Hello", "Bonjour")
 # Output: {'prompt': 'Translate to French: Hello', 'completion': 'Bonjour'}
-
+```
 ### Documentation for `update_indices_csv`
 
-``` 
+
 ## `update_indices_csv`
 
 Updates a CSV file by appending a new index to a specified column. This is typically used to exclude certain indices from future processing or sampling tasks.
@@ -155,10 +155,10 @@ Updates a CSV file by appending a new index to a specified column. This is typic
 ```python
 update_indices_csv("path/to/indices.csv", "exclude_indices", 102)
 # The file "path/to/indices.csv" now includes the new index 102 in the "exclude_indices" column.
-
+```
 ### Documentation for `generate_shot_examples`
 
-``` 
+
 ## `generate_shot_examples`
 
 Generates few-shot learning examples from a given dataset dictionary, sampling a specified number of examples for each unique class.

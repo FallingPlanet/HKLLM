@@ -4,7 +4,8 @@ import numpy as np
 import json
 
 class EmbeddingEncoder:
-    def __init__(self, model_name, tokenizer_name=None, device=None,token=None):
+    def __init__(self, model_name, tokenizer_name=None, device=None):
+        token = os.getenv('HF_TOKEN')
         """
         Initializes the EmbeddingEncoder with a specified model and tokenizer and sets the device for computation.
         
@@ -65,7 +66,7 @@ class EmbeddingEncoder:
 
 # Example usage
 if __name__ == "__main__":
-    encoder = EmbeddingEncoder('mistralai/Mistral-7B-Instruct-v0.3',token='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')
+    encoder = EmbeddingEncoder('mistralai/Mistral-7B-Instruct-v0.3')
     text_samples = ["Hello world!", "How are you today?"]
     embeddings = encoder.encode(text_samples, return_format='list')
     print("Embeddings:", embeddings)

@@ -1,0 +1,13 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1  # Use the latest version number
+    hooks:
+      - id: detect-private-key
+      - id: check-json
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.1.0  # Use the latest version number
+    hooks:
+      - id: detect-secrets
+        args: ['--all-files']
+        exclude: '^.secrets.baseline$'

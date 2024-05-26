@@ -3,22 +3,38 @@ import torch
 import numpy as np
 import json
 import os
+
 class EmbeddingEncoder:
-    def __init__(self, model_name, tokenizer_name=None, device=None):
+    def __init__(self, model, tokenizer_name=None, device=None, adapter_name=None):
         token = os.getenv('HF_TOKEN')
         """
-        Initializes the EmbeddingEncoder with a specified model and tokenizer and sets the device for computation.
+        Initializes the EmbeddingEncoder with a specified model or model name, an optional tokenizer, and sets the device for computation.
         
         Args:
-            model_name (str): The model identifier from Hugging Face's model hub.
-            tokenizer_name (str): Optional; the tokenizer identifier. If None, uses model_name.
+            model (Union[str, torch.nn.Module]): The model identifier from Hugging Face's model hub or a model instance.
+            tokenizer_name (str): Optional; the tokenizer identifier. If None, uses model if it's a string.
             device (str): Optional; the device to run the model on ('cuda' or 'cpu'). If None, uses cuda if available.
+            adapter_name (str): Optional; the adapter identifier to load with the model, either a path or from the Hugging Face hub.
         """
         if tokenizer_name is None:
-            tokenizer_name = model_name
+            tokenizer_name = model if isinstance(model, str) else None
         self.device = device or ('cuda' if torch.cuda.is_available() else 'cpu')
-        self.model = AutoModel.from_pretrained(model_name,token=token).to(self.device)
-        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+        
+        if isinstance(model, str):
+            self.model = AutoModel.from_pretrained(model, token=token).to(self.device)
+            if adapter_name:
+                # Check if the adapter path exists or it is from the hub
+                if os.path.exists(adapter_name):
+                    # Load adapter from the local path
+                    self.model.load_adapter(adapter_name)
+                else:
+                    # Load adapter from Hugging Face Hub
+                    self.model.load_adapter(adapter_name, source='hf')
+        else:
+            self.model = model.to(self.device)
+
+        if tokenizer_name:
+            self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
         self.model.eval()  # Set the model to evaluation mode
 
     def encode(self, text_data, output_path=None, return_format='numpy', text_column=None):
@@ -34,7 +50,7 @@ class EmbeddingEncoder:
         Returns:
             Embeddings as specified by return_format.
         """
-        # Handling different types of text_data input
+        # Handling different types of text data input
         if isinstance(text_data, dict):
             if text_column is None:
                 raise ValueError("text_column must be specified if text_data is a dictionary")
@@ -63,6 +79,4 @@ class EmbeddingEncoder:
             if output_path:
                 np.save(output_path, embeddings)
             return embeddings
-
-
 

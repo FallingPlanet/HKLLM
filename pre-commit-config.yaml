@@ -1,0 +1,8 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.4.0  # Use the latest version
+    hooks:
+      - id: detect-private-key
+      - id: detect-aws-credentials
+      - id: detect-secrets
+        args: ['--all-files', '--use-all-plugins']

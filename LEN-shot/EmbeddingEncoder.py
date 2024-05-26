@@ -4,7 +4,7 @@ import numpy as np
 import json
 
 class EmbeddingEncoder:
-    def __init__(self, model_name, tokenizer_name=None, device=None):
+    def __init__(self, model_name, tokenizer_name=None, device=None,token=None):
         """
         Initializes the EmbeddingEncoder with a specified model and tokenizer and sets the device for computation.
         
@@ -16,7 +16,7 @@ class EmbeddingEncoder:
         if tokenizer_name is None:
             tokenizer_name = model_name
         self.device = device or ('cuda' if torch.cuda.is_available() else 'cpu')
-        self.model = AutoModel.from_pretrained(model_name).to(self.device)
+        self.model = AutoModel.from_pretrained(model_name,token=token).to(self.device)
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
         self.model.eval()  # Set the model to evaluation mode
 
@@ -65,7 +65,7 @@ class EmbeddingEncoder:
 
 # Example usage
 if __name__ == "__main__":
-    encoder = EmbeddingEncoder('bert-base-uncased')
+    encoder = EmbeddingEncoder('mistralai/Mistral-7B-Instruct-v0.3',token='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')
     text_samples = ["Hello world!", "How are you today?"]
     embeddings = encoder.encode(text_samples, return_format='list')
     print("Embeddings:", embeddings)

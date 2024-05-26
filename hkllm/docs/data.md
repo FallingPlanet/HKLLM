@@ -26,7 +26,7 @@ print(prepared_data)
 ```
 ### Documentation for `prepare_dataset_for_conversion`
 
-```markdown
+
 ## `prepare_dataset_for_conversion`
 
 Prepares a dataset for conversion tasks by sampling and concatenating text columns, similar to `prepare_dataset_for_inference`, but includes an annotation column.
@@ -47,7 +47,7 @@ Prepares a dataset for conversion tasks by sampling and concatenating text colum
 - Utilizes `conversion_parser` from `hkllm.promptlm.utils.parsers` for parsing.
 
 ### Example
-```
+
 ```python
 # Assume df and parameters are defined as shown in previous examples
 data_for_conversion = prepare_dataset_for_conversion(df, 'description', 'category', 'notes', 2)
@@ -55,7 +55,7 @@ print(data_for_conversion)
 ```
 ### Documentation for `prepare_dataset_for_generator`
 
-```markdown
+
 ## `prepare_dataset_for_generator`
 
 Prepares a dataset for generator tasks by excluding specific indices and sampling, optionally concatenating text columns.
@@ -72,7 +72,7 @@ Prepares a dataset for generator tasks by excluding specific indices and samplin
 
 ### Returns
 - **dict**: A dictionary with keys 'x' for text data, 'y' for class labels (if class_col is not None), and 'Index' for sampled row indices.
-```
+
 ### Example
 ```python
 # Example usage assuming the DataFrame and CSV path are correctly set up

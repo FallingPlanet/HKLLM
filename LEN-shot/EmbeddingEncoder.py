@@ -2,7 +2,7 @@ from transformers import AutoModel, AutoTokenizer
 import torch
 import numpy as np
 import json
-
+import os
 class EmbeddingEncoder:
     def __init__(self, model_name, tokenizer_name=None, device=None):
         token = os.getenv('HF_TOKEN')
@@ -64,11 +64,5 @@ class EmbeddingEncoder:
                 np.save(output_path, embeddings)
             return embeddings
 
-# Example usage
-if __name__ == "__main__":
-    encoder = EmbeddingEncoder('mistralai/Mistral-7B-Instruct-v0.3')
-    text_samples = ["Hello world!", "How are you today?"]
-    embeddings = encoder.encode(text_samples, return_format='list')
-    print("Embeddings:", embeddings)
 
 

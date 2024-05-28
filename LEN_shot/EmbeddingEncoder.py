@@ -79,4 +79,35 @@ class EmbeddingEncoder:
             if output_path:
                 np.save(output_path, embeddings)
             return embeddings
+    def adapt_rlhf_data(rlhf_data):
+        """
+        Adapts RLHF data to a format suitable for other components, by converting 'chosen' to 'completion'.
+        It operates non-destructively, returning a new dictionary with the desired structure.
+        
+        Args:
+            rlhf_data (dict or list of dicts): RLHF data in the format with 'prompt', 'chosen', and 'rejected'.
 
+        Returns:
+            dict or list of dicts: New data formatted with 'prompt' and 'completion' keys, original data remains unchanged.
+        """
+        if isinstance(rlhf_data, dict):
+            # Handle single dictionary case, create a new dictionary
+            adapted_dict = {
+                "prompt": rlhf_data['prompt'],
+                "completion": rlhf_data['chosen']
+            }
+            return adapted_dict
+        elif isinstance(rlhf_data, list):
+            # Handle list of dictionaries case, create new dictionaries for each item
+            adapted_list = []
+            for item in rlhf_data:
+                adapted_item = {
+                    "prompt": item['prompt'],
+                    "completion": item['chosen']
+                }
+                adapted_list.append(adapted_item)
+            return adapted_list
+        else:
+            raise TypeError("Expected rlhf_data to be a dict or list of dicts")
+
+    

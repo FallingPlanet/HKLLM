@@ -3,16 +3,17 @@ import json
 
 
 
-def prepare_dataset_for_inference(df, text_col, class_col, sample_size, supp_columns=None, leading_columns=None):
+def prepare_dataset_for_inference(df, text_col, class_col, sample_size, max_chars=None, supp_columns=None, leading_columns=None):
     """
     Prepare a dataset for inference by sampling and optionally concatenating leading and supplementary text columns,
-    handling empty or NaN values gracefully by skipping them in concatenation.
+    handling empty or NaN values gracefully by skipping them in concatenation. Text can be truncated to a maximum length.
 
     Parameters:
     - df: DataFrame containing the dataset.
     - text_col: Name of the main text column.
     - class_col: Name of the classification column.
     - sample_size: Number of samples to draw from df.
+    - max_chars: Optional. Maximum number of characters for each text entry.
     - supp_columns: Optional. Additional columns to concatenate after the main text.
     - leading_columns: Optional. Columns to concatenate before the main text.
 
@@ -31,15 +32,19 @@ def prepare_dataset_for_inference(df, text_col, class_col, sample_size, supp_col
     # Append supplementary columns, skipping blanks and NaNs
     if supp_columns:
         for col in supp_columns:
-            sampled_df['combined_text'] += sampled_df[col].astype(str).replace(r'^\s*$', '', regex=True).apply(lambda x: ' ' + x if x != '' else '')
+            sampled_df['combined_text'] += " " + sampled_df[col].astype(str).replace(r'^\s*$', '', regex=True).apply(lambda x: x if x != '' else '')
+
+    # Truncate text to the specified maximum number of characters
+    if max_chars is not None:
+        sampled_df['combined_text'] = sampled_df['combined_text'].apply(lambda x: x[:max_chars])
 
     x_data = sampled_df['combined_text'].tolist()
-
     data_for_inference = {
         'x': x_data,
         'y': sampled_df[class_col].tolist()
     }
     return data_for_inference
+
 
 
 

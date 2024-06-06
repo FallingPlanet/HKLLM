@@ -1,80 +1,74 @@
-from transformers import AutoModel, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 import numpy as np
 import json
 import os
+from torch.utils.data import DataLoader, TensorDataset
 
 class EmbeddingEncoder:
     def __init__(self, model, tokenizer_name=None, device=None, adapter_name=None):
-        # Retrieve token from environment variable
+        os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
         token = os.getenv('HF_TOKEN')
-        
-        # Set up tokenizer name based on model if not provided
-        if tokenizer_name is None:
-            tokenizer_name = model if isinstance(model, str) else None
-        
-        # Setup device
         self.device = device or ('cuda' if torch.cuda.is_available() else 'cpu')
         
-        # Load model from Hugging Face hub or a local model
         if isinstance(model, str):
-            self.model = AutoModel.from_pretrained(model, token=token).to(self.device)
-            # Load adapter if specified
+            self.model = AutoModelForCausalLM.from_pretrained(model, use_auth_token=token, device_map="auto", output_hidden_states=True)
             if adapter_name:
                 adapter_source = 'hf' if os.path.exists(adapter_name) else 'local'
                 self.model.load_adapter(adapter_name, source=adapter_source)
         else:
-            # If a model instance is provided, just use it
             self.model = model.to(self.device)
 
-        # Load tokenizer
         if tokenizer_name:
             self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
-        
-        # Set model to evaluation mode
+
         self.model.eval()
 
-    def encode(self, text_data, output_path=None, return_format='numpy', text_column=None):
-        """
-        Encodes the provided text data into embeddings using the initialized model.
+    def encode(self, text_data, output_path=None, return_format='numpy', text_column=None, batch_size=16):
+        if isinstance(text_data, dict) and text_column is None:
+            raise ValueError("text_column must be specified if text_data is a dictionary")
         
-        Args:
-            text_data (str, list, or dict): Text data to encode. Can be a single string, list of strings, or a JSON-like dictionary.
-            output_path (str): Optional path to save the output (JSON or NumPy file).
-            return_format (str): The format of the return value ('numpy', 'json', or 'list').
-            text_column (str): Optional; key to use if text_data is a dictionary (for JSON-like structures).
-        
-        Returns:
-            Embeddings as specified by the return format.
-        """
-        if isinstance(text_data, dict):
-            if text_column is None:
-                raise ValueError("text_column must be specified if text_data is a dictionary")
-            text_data = [item[text_column] for item in text_data]
-        elif isinstance(text_data, str):
-            text_data = [text_data]  # Convert a single string to a list
+        text_data = [text_data] if isinstance(text_data, str) else text_data.get(text_column, text_data) if isinstance(text_data, dict) else text_data
 
-        # Prepare the text data for the model
-        inputs = self.tokenizer(text_data, return_tensors='pt', padding=True, truncation=True, max_length=512).to(self.device)
+        inputs = self.tokenizer(text_data, return_tensors='pt', padding=True, truncation=True, max_length=512)
+        inputs = {key: value.to(self.device) for key, value in inputs.items()}
 
-        # Generate embeddings
-        with torch.no_grad():
-            outputs = self.model(**inputs)
-            embeddings = outputs.last_hidden_state[:, 0, :].cpu().numpy()  # Extract the CLS token representation
+        dataset = TensorDataset(inputs['input_ids'], inputs.get('attention_mask', torch.Tensor()))
+        dataloader = DataLoader(dataset, batch_size=batch_size)
 
-        # Handle different return formats
+        all_embeddings = []
+
+        for batch in dataloader:
+            input_ids, attention_mask = batch
+            input_ids = input_ids.to(self.device)
+            if attention_mask.nelement() != 0:
+                attention_mask = attention_mask.to(self.device)
+                model_inputs = {'input_ids': input_ids, 'attention_mask': attention_mask}
+            else:
+                model_inputs = {'input_ids': input_ids}
+
+            with torch.no_grad():
+                outputs = self.model(**model_inputs, output_hidden_states=True)
+                hidden_states = outputs.hidden_states
+                embeddings = hidden_states[-1][:, 0, :]
+                embeddings = embeddings.cpu().numpy()
+                all_embeddings.append(embeddings)
+
+        all_embeddings = np.concatenate(all_embeddings, axis=0)
+
         if return_format == 'json':
-            formatted_data = [{'text': text, 'embedding': emb.tolist()} for text, emb in zip(text_data, embeddings)]
+            formatted_data = [{'text': text, 'embedding': emb.tolist()} for text, emb in zip(text_data, all_embeddings)]
             if output_path:
                 with open(output_path, 'w') as f:
                     json.dump(formatted_data, f)
             return formatted_data
         elif return_format == 'list':
-            return embeddings.tolist()
+            return all_embeddings.tolist()
         else:
             if output_path:
-                np.save(output_path, embeddings)
-            return embeddings
+                np.save(output_path, all_embeddings)
+            return all_embeddings
+
 
     @staticmethod
     def adapt_rlhf_data(rlhf_data):

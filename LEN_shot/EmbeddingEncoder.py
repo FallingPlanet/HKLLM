@@ -59,14 +59,8 @@ class EmbeddingEncoder:
 
         """
         if self.formatting_func:
-            print("Type of text_data:", type(text_data))
-            print("Content of text_data:", text_data[:5])  # Print first few entries to avoid too much output
-            # Example debug snippet
-            if isinstance(text_data, list) and all(isinstance(i, dict) for i in text_data):
-                print("Data is correctly formatted.")
-            else:
-                print("Data is not correctly formatted. Check the structure.")
-
+            
+            
             text_data = self.formatting_func(text_data, convert_from_instruction=False,convert_from_prompt_only=True, bos_token="<|startoftext|>", eos_token="<|endoftext|>")
         
         inputs = self.tokenizer(text_data, return_tensors='pt', padding=True, truncation=True, max_length=512)

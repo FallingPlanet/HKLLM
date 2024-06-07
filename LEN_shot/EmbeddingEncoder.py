@@ -47,7 +47,7 @@ class EmbeddingEncoder:
         Encodes text data into embeddings using the model's last hidden states.
 
         Args:
-            text_data (list or dict): The text data to encode. Can be a list of strings or a dictionary with text data.
+            text_data (str, list, or dict): The text data to encode. Can be a single string, a list of strings, or a dictionary with text data.
             output_path (str, optional): Path to save the output embeddings if specified.
             return_format (str, optional): The format to return the embeddings ('numpy', 'list', or 'json').
             batch_size (int, optional): The batch size to use for processing texts through the model.
@@ -56,14 +56,15 @@ class EmbeddingEncoder:
             numpy.ndarray, list, or dict: The embeddings in the specified format. If 'json' is chosen and output_path is specified, data is also saved as a JSON file.
 
         Processes the text through the formatting function if set, tokenizes the text, and feeds it into the model to get embeddings, which are then returned in the specified format.
-
         """
+        # Check if text_data is a single string and convert it to a list if true
+        if isinstance(text_data, str):
+            text_data = [text_data]
+
         if self.formatting_func:
-            
-            
-            text_data = self.formatting_func(text_data, convert_from_instruction=False,convert_from_prompt_only=True, bos_token="<|startoftext|>", eos_token="<|endoftext|>")
-        
-        inputs = self.tokenizer(text_data, return_tensors='pt', padding=True, truncation=True, max_length=512)
+            text_data = self.formatting_func(text_data, convert_from_instruction=False, convert_from_prompt_only=True, bos_token="", eos_token="")
+
+        inputs = self.tokenizer(text_data, return_tensors='pt', padding=True, truncation=True)
         inputs = {key: value.to(self.device) for key, value in inputs.items()}
 
         dataset = TensorDataset(inputs['input_ids'], inputs.get('attention_mask', torch.Tensor()))
@@ -79,7 +80,6 @@ class EmbeddingEncoder:
                 model_inputs = {'input_ids': input_ids, 'attention_mask': attention_mask}
             else:
                 model_inputs = {'input_ids': input_ids}
-
 
             with torch.no_grad():
                 outputs = self.model(**model_inputs, output_hidden_states=True)
@@ -101,6 +101,7 @@ class EmbeddingEncoder:
             if output_path:
                 np.save(output_path, all_embeddings)
             return all_embeddings
+
 
     @staticmethod
     def adapt_rlhf_data(rlhf_data):

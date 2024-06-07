@@ -67,7 +67,7 @@ class EmbeddingEncoder:
             else:
                 print("Data is not correctly formatted. Check the structure.")
 
-            text_data = self.formatting_func(text_data, convert_from_instruction=True, bos_token="<|startoftext|>", eos_token="<|endoftext|>")
+            text_data = self.formatting_func(text_data, convert_from_instruction=False,convert_from_prompt_only=True, bos_token="<|startoftext|>", eos_token="<|endoftext|>")
         
         inputs = self.tokenizer(text_data, return_tensors='pt', padding=True, truncation=True, max_length=512)
         inputs = {key: value.to(self.device) for key, value in inputs.items()}
@@ -80,7 +80,12 @@ class EmbeddingEncoder:
             input_ids, attention_mask = batch
             input_ids = input_ids.to(self.device)
             attention_mask = attention_mask.to(self.device) if attention_mask.nelement() != 0 else None
-            model_inputs = {'input_ids': input_ids, 'attention_mask': attention_mask} if attention_mask else {'input_ids': input_ids}
+            # Ensure that the attention_mask is not None and has been correctly processed
+            if attention_mask is not None and attention_mask.nelement() != 0:
+                model_inputs = {'input_ids': input_ids, 'attention_mask': attention_mask}
+            else:
+                model_inputs = {'input_ids': input_ids}
+
 
             with torch.no_grad():
                 outputs = self.model(**model_inputs, output_hidden_states=True)

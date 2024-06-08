@@ -5,123 +5,80 @@ import json
 import os
 from torch.utils.data import DataLoader, TensorDataset
 from .Formatter import llama_3_formatting_func  # Ensure correct import path
+import re
 
 class EmbeddingEncoder:
-    def __init__(self, model, tokenizer_name=None, device=None, adapter_name=None, use_llama3_format=False):
+    def __init__(self, model, tokenizer_name=None, adapter_name=None, use_llama3_format=False, removal_texts=None):
         """Initializes the EmbeddingEncoder with specific configurations for the model, tokenizer, and formatting function.
 
         Args:
         model (str or torch.nn.Module): The pre-trained model or the path to the pre-trained model directory.
         tokenizer_name (str, optional): The tokenizer name or path used for tokenizing input texts.
-        device (str, optional): The device type ('cuda' or 'cpu') on which the model should be loaded.
         adapter_name (str, optional): The path or identifier for a pre-trained adapter to be loaded into the model.
         use_llama3_format (bool, optional): Flag to determine whether to preprocess text data using the Llama-3 formatting function before encoding.
-
-        Sets up the model and tokenizer and ensures that the model is in evaluation mode. Adapters are loaded if specified.
+        removal_texts (list of str, optional): List of texts to remove from input data.
         """
-        os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
-        token = os.getenv('HF_TOKEN')
-        self.device = device or ('cuda' if torch.cuda.is_available() else 'cpu')
-
-        # Initialize the model
-        if isinstance(model, str):
-            self.model = AutoModelForCausalLM.from_pretrained(model, use_auth_token=token, device_map="auto", output_hidden_states=True)
-            if adapter_name:
-                adapter_source = 'hf' if os.path.exists(adapter_name) else 'local'
-                self.model.load_adapter(adapter_name, source=adapter_source)
-        else:
-            self.model = model.to(self.device)
-
-        # Initialize the tokenizer
-        if tokenizer_name:
-            self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
-        
+        self.model = AutoModelForCausalLM.from_pretrained(model, use_auth_token=os.getenv('HF_TOKEN'), device_map="auto", output_hidden_states=True) if isinstance(model, str) else model
+        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
         self.model.eval()
-
-        # Setting up the formatting function
-        
         self.formatting_func = llama_3_formatting_func if use_llama3_format else None
+        self.removal_texts = [re.compile(re.escape(text)) for text in removal_texts] if removal_texts else []
+
+    def clean_text(self, text_data):
+        """ Cleans prompt information from the text data by removing specified blocks of text. """
+        cleaned_data = []
+        for text in text_data:
+            for pattern in self.removal_texts:
+                text = pattern.sub('', text)  # Apply each regex pattern separately
+            cleaned_data.append(text.strip())
+        return cleaned_data
 
     def encode(self, text_data, output_path=None, return_format='numpy', batch_size=16):
-        """
-        Encodes text data into embeddings using the model's last hidden states.
-
-        Args:
-            text_data (str, list, or dict): The text data to encode. Can be a single string, a list of strings, or a dictionary with text data.
-            output_path (str, optional): Path to save the output embeddings if specified.
-            return_format (str, optional): The format to return the embeddings ('numpy', 'list', or 'json').
-            batch_size (int, optional): The batch size to use for processing texts through the model.
-
-        Returns:
-            numpy.ndarray, list, or dict: The embeddings in the specified format. If 'json' is chosen and output_path is specified, data is also saved as a JSON file.
-
-        Processes the text through the formatting function if set, tokenizes the text, and feeds it into the model to get embeddings, which are then returned in the specified format.
-        """
-        # Check if text_data is a single string and convert it to a list if true
         if isinstance(text_data, str):
             text_data = [text_data]
 
         if self.formatting_func:
             text_data = self.formatting_func(text_data, convert_from_instruction=False, convert_from_prompt_only=True, bos_token="", eos_token="")
 
-        inputs = self.tokenizer(text_data, return_tensors='pt', padding=True, truncation=True)
-        inputs = {key: value.to(self.device) for key, value in inputs.items()}
+        if self.removal_texts:
+            text_data = self.clean_text(text_data)
 
-        dataset = TensorDataset(inputs['input_ids'], inputs.get('attention_mask', torch.Tensor()))
-        dataloader = DataLoader(dataset, batch_size=batch_size)
+        inputs = self.tokenizer(text_data, return_tensors='pt', padding=True, truncation=True)
+        dataloader = DataLoader(TensorDataset(inputs['input_ids'], inputs['attention_mask']), batch_size=batch_size)
 
         all_embeddings = []
         for batch in dataloader:
             input_ids, attention_mask = batch
-            input_ids = input_ids.to(self.device)
-            attention_mask = attention_mask.to(self.device) if attention_mask.nelement() != 0 else None
-            # Ensure that the attention_mask is not None and has been correctly processed
-            if attention_mask is not None and attention_mask.nelement() != 0:
-                model_inputs = {'input_ids': input_ids, 'attention_mask': attention_mask}
-            else:
-                model_inputs = {'input_ids': input_ids}
-
             with torch.no_grad():
+                model_inputs = {'input_ids': input_ids.to(self.model.device), 'attention_mask': attention_mask.to(self.model.device)}
                 outputs = self.model(**model_inputs, output_hidden_states=True)
                 embeddings = outputs.hidden_states[-1][:, 0, :]
-                embeddings = embeddings.cpu().numpy()
-                all_embeddings.append(embeddings)
+                all_embeddings.append(embeddings.cpu().numpy())
 
         all_embeddings = np.concatenate(all_embeddings, axis=0)
 
-        if return_format == 'json':
+        if return_format == 'json' and output_path:
             formatted_data = [{'text': text, 'embedding': emb.tolist()} for text, emb in zip(text_data, all_embeddings)]
-            if output_path:
-                with open(output_path, 'w') as f:
-                    json.dump(formatted_data, f)
+            with open(output_path, 'w') as f:
+                json.dump(formatted_data, f)
             return formatted_data
         elif return_format == 'list':
             return all_embeddings.tolist()
         else:
             if output_path:
                 np.save(output_path, all_embeddings)
-            return all_embeddings
+        return all_embeddings
 
 
     @staticmethod
     def adapt_rlhf_data(rlhf_data):
-        """
-        Adapts data from RLHF format to a more general format with 'prompt' and 'completion' fields.
-
-        Args:
-            rlhf_data (dict or list of dicts): Data in RLHF format which typically contains 'prompt', 'chosen', and 'rejected' fields.
-
-        Returns:
-            dict or list of dicts: Reformatted data with 'prompt' and 'completion' fields where 'completion' is derived from the 'chosen' field in the original data.
-
-        This function is useful for converting RLHF-specific formatted data into a format suitable for general use, particularly in training or inference setups.
-
-                """
+        """ Converts RLHF data format to a simple 'prompt' and 'completion' format. """
         if isinstance(rlhf_data, dict):
             return {"prompt": rlhf_data['prompt'], "completion": rlhf_data['chosen']}
         elif isinstance(rlhf_data, list):
             return [{"prompt": item['prompt'], "completion": item['chosen']} for item in rlhf_data]
         else:
             raise TypeError("Expected rlhf_data to be a dict or list of dicts")
+
 
 

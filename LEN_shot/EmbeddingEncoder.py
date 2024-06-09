@@ -8,28 +8,32 @@ from .Formatter import llama_3_formatting_func  # Ensure correct import path
 import re
 
 class EmbeddingEncoder:
-    def __init__(self, model, tokenizer_name=None, adapter_name=None, use_llama3_format=False, removal_texts=None):
-        """Initializes the EmbeddingEncoder with specific configurations for the model, tokenizer, and formatting function.
-
-        Args:
-        model (str or torch.nn.Module): The pre-trained model or the path to the pre-trained model directory.
-        tokenizer_name (str, optional): The tokenizer name or path used for tokenizing input texts.
-        adapter_name (str, optional): The path or identifier for a pre-trained adapter to be loaded into the model.
-        use_llama3_format (bool, optional): Flag to determine whether to preprocess text data using the Llama-3 formatting function before encoding.
-        removal_texts (list of str, optional): List of texts to remove from input data.
+    def __init__(self, model, tokenizer_name, removal_patterns=None, removal_strings=None, use_llama3_format=False):
         """
-        self.model = AutoModelForCausalLM.from_pretrained(model, use_auth_token=os.getenv('HF_TOKEN'), device_map="auto", output_hidden_states=True) if isinstance(model, str) else model
+        Args:
+        model (str or torch.nn.Module): Model identifier or model instance.
+        tokenizer_name (str): Tokenizer identifier.
+        removal_patterns (list of str): Regex patterns to remove from input texts.
+        removal_strings (list of str): Exact strings to remove from input texts.
+        use_llama3_format (bool): Whether to use specific formatting.
+        """
+        self.model = AutoModelForCausalLM.from_pretrained(model, use_auth_token=os.getenv('HF_TOKEN'), output_hidden_states=True) if isinstance(model, str) else model
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
         self.model.eval()
-        self.formatting_func = llama_3_formatting_func if use_llama3_format else None
-        self.removal_texts = [re.compile(re.escape(text)) for text in removal_texts] if removal_texts else []
+        self.formatting_func = None  # Assign actual formatting function if use_llama3_format is True
+        self.removal_patterns = [re.compile(pattern) for pattern in removal_patterns] if removal_patterns else []
+        self.removal_strings = removal_strings if removal_strings else []
 
     def clean_text(self, text_data):
-        """ Cleans prompt information from the text data by removing specified blocks of text. """
+        """Applies both string replacements and regex removals to clean text data."""
         cleaned_data = []
         for text in text_data:
-            for pattern in self.removal_texts:
-                text = pattern.sub('', text)  # Apply each regex pattern separately
+            # Apply string replacements
+            for removal_string in self.removal_strings:
+                text = text.replace(removal_string, '')
+            # Apply regex removals
+            for pattern in self.removal_patterns:
+                text = pattern.sub('', text)
             cleaned_data.append(text.strip())
         return cleaned_data
 
@@ -40,8 +44,8 @@ class EmbeddingEncoder:
         if self.formatting_func:
             text_data = self.formatting_func(text_data, convert_from_instruction=False, convert_from_prompt_only=True, bos_token="", eos_token="")
 
-        if self.removal_texts:
-            text_data = self.clean_text(text_data)
+    
+        text_data = self.clean_text(text_data)
 
         inputs = self.tokenizer(text_data, return_tensors='pt', padding=True, truncation=True)
         dataloader = DataLoader(TensorDataset(inputs['input_ids'], inputs['attention_mask']), batch_size=batch_size)
